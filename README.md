@@ -25,8 +25,8 @@ You can play and test your trained neuronal network at **https://idgaming.de/**.
 
 ## Ablauf
 * Declarations
-* phase1: weiter, solo, bettel, ruf, hochzeit
-* wenn noetig: phase2: ramsch (wenn alle), solo=(farbe, geier wenz),
+* phase1: weg, solo, bettel, ruf, hochzeit
+* phase2: ramsch (wenn alle), solo=(farbe, geier wenz), ruf(mit wem?)
 
  (hoechstes gewinnt) (hoechstes gewinnt)
 ## Installation
@@ -73,6 +73,9 @@ pyreverse -o png gameClasses.py witches.py
 |-|---------|-|
 |2020.08.14| | init  |
 |2020.08.14| | testing_random_playing  |
+|2020.08.14| included_declarations see gameLogicTests | included_declarations  |
+next step: random playing...
+
 
 ## TODO
 -

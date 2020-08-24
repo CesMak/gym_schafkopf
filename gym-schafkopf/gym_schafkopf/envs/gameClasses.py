@@ -78,6 +78,7 @@ class player(object):
         self.offhand      = [] # contains won cards of each round (for 4 players 4 cards!) = tricks
         self.take_hand    = [] # cards in first phase cards to take! used in witches, schafkopf hochzeit
         self.colorFree    = [0.0]*len(colors) # must be double for pytorch learning! 1.0 means other know that your are free of this color B G R Y
+        self.trumpFree    = 0.0
         self.type         = type # HUMAN, RL=Automatic Bot, TODO change
         self.colors       = colors
 
@@ -118,6 +119,9 @@ class player(object):
         for j, i in enumerate(self.colors):
             if color == i:
                 self.colorFree[j] = 1.0
+
+    def setTrumpFree(self):
+        self.trumpFree = 1.0
 
     def playRandomCard(self, incolor, options):
         if len(options) == 0:
@@ -287,7 +291,7 @@ class game(metaclass=abc.ABCMeta):
 
     def getRandomValidOption(self):
         # return a card!
-        valid_options_as_cards = self.getValidOptions(self.active_player)# cards
+        valid_options_as_cards = self.getValidOptions(self.on_table_cards, self.active_player)# cards
         rand_idx               = random.randrange(len(valid_options_as_cards))
         return valid_options_as_cards[rand_idx]
 

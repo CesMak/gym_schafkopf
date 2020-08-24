@@ -34,7 +34,7 @@ class schafkopf(game):
             self.declarations.append("")
 
     def assignDeclaration(self, cards, player_idx, decl="", use_random=False):
-        random.seed(None)
+        #random.seed(None)
         if use_random:
             valid_options = self.getPossDeclarations(cards)
             self.declarations[player_idx] = valid_options[random.randrange(len(valid_options))]
@@ -89,6 +89,8 @@ class schafkopf(game):
 
         if highest=="solo":
             self.matching["type"]    = solo_decl
+            #TODO:
+            self.matching["trump"]   = "H"
         elif highest=="weg":
             self.matching["type"]    = "ramsch"
         elif highest=="ruf":
@@ -96,7 +98,8 @@ class schafkopf(game):
             self.matching["partner"] = self.getPlayerIdxOfSpecificCard("A", ruf_decl.split("_")[1])
         else: # hochzeit, bettel
             self.matching["type"]    = highest
-        self.matching["spieler"] = idx
+        self.matching["spieler"]     = idx
+        self.matching["trump"]       = "H"
 
     def getPlayerIdxOfSpecificCard(self, value, color):
         for n, play in enumerate(self.players):
@@ -140,6 +143,116 @@ class schafkopf(game):
         trump_cards+= self.getAnyCards(cards, values=["U", "O"])
         return trump_cards
 
+    def isTrump(self, card, trump_color="H"):
+        a = self.getTrumps([[card]], trump_color)
+        if len(a)>0:
+            return True, a[0]
+        else:
+            return False, None
+
+    def getInColor(self, cards):
+        # returns the leading color of the on_table_cards
+        # trump
+        # or color is returned
+        if len(cards)==0:
+            return None
+        else:
+            first_card = cards[0]
+            isTrump, _     = self.isTrump(first_card, self.matching["trump"])
+            if isTrump:
+                return "trump"
+            else:
+                return first_card.color
+
+    def getOptions(self, incolor, player, orderOptions=False):
+        # return hand position of this card
+        # incolor is None if there is no card yet on the table
+        # incolor is trump if o or u or trump color is played
+        # incolor is color = E, G, S if color is played!
+
+        cards        = self.players[player].hand
+        options      = []
+        hasColor     = False
+        hasTrump     = False
+        if incolor is None:
+            for i, card in enumerate(cards):
+                options.append(i)
+        else:
+            for i, card in enumerate(cards):
+                if card.color == incolor:
+                    options.append(i)
+                    hasColor = True
+                elif incolor == "trump":
+                    isTrump, _     = self.isTrump(card, self.matching["trump"])
+                    print(card, isTrump)
+                    if isTrump:
+                        options.append(i)
+                        hasTrump = True
+
+        if not hasColor and incolor is not None: # no do not check for joker here!
+            self.players[player].setColorFree(incolor)
+        if not hasTrump and incolor is not None: # no do not check for joker here!
+            self.players[player].setTrumpFree()
+        if orderOptions: return sorted(options, key = lambda x: ( x[1].color,  x[1].value))
+        return options
+
+
+    def getValidOptions(self, cards, player):
+        options = self.getOptions(self.getInColor(cards), player) # hand index
+        # return as cards
+        return [self.players[player].hand[i] for i in options]
+
+    def playUntilAI(self, print_=False):
+        rewards        = {"state": "play_or_shift", "ai_reward": None}
+        gameOver       = False
+        round_finished = False
+        while len(self.players[self.active_player].hand) > 0:
+            current_player = self.active_player
+            if "RANDOM" in self.player_types[current_player]:
+                card            = self.getRandomValidOption()
+                hand_idx_action = self.players[self.active_player].hand.index(card)
+                if print_:
+                    print("[{}] {} {}\t plays {}\tCard {}\tHand Index {}\t len {} ->colFree {} trumpFree {}".format(self.current_round, current_player, self.player_names[current_player], self.player_types[current_player], card, hand_idx_action, len(self.players[current_player].hand), self.players[current_player].colorFree, self.players[current_player].trumpFree))
+                rewards, round_finished, gameOver = self.step(hand_idx_action, print_)
+                if print_ and round_finished:
+                    print("")
+            else:
+                return rewards, round_finished, gameOver
+        return rewards, True, True
+
+    def step(self, card_idx, print_=False):
+        #Note that card_idx is a Hand Card IDX!
+        # it is not card.idx unique number!
+        # TODO include declaratoins phase here!
+
+        round_finished = False
+        played_card = self.players[self.active_player].hand.pop(card_idx)
+        self.on_table_cards.append(played_card)
+        # Case round finished:
+        trick_rewards    = [0]*self.nu_players
+        on_table_win_idx = -1
+        player_win_idx   = -1
+        if len(self.on_table_cards) == self.nu_players:
+            #winning_card, on_table_win_idx, player_win_idx = self.evaluateWinner()
+            #trick_rewards[player_win_idx] = self.countResult([self.on_table_cards], self.players[player_win_idx].offhand)
+            self.current_round +=1
+            self.played_cards.extend(self.on_table_cards)
+            self.players[player_win_idx].appendCards(self.on_table_cards)
+            self.on_table_cards = []
+            self.active_player  = player_win_idx
+            round_finished = True
+        else:
+            self.active_player = self.getNextPlayer()
+
+        # if round_finished and len(self.played_cards) == self.nu_cards*self.nu_players:
+        #     self.assignRewards()
+        # if self.isGameFinished():
+        #     self.assignRewards()
+        #     for i in range(len(self.total_rewards)):
+        #         self.total_rewards[i] +=self.rewards[i]
+
+		#yes this is the correct ai reward in case all players are ai players.
+        return {"state": "play", "ai_reward": trick_rewards[player_win_idx], "on_table_win_idx": on_table_win_idx, "trick_rewards": trick_rewards, "player_win_idx": player_win_idx, "final_rewards": self.rewards}, round_finished, self.isGameFinished()
 
 
 
@@ -147,8 +260,9 @@ class schafkopf(game):
 
 
 
-
-
+######
+####  currently not used functions:::
+####
 
     def play_ai_move(self, ai_card_idx, print_=False):
         'card idx from 0....'
@@ -179,32 +293,7 @@ class schafkopf(game):
                     print("Caution", self.player_types[current_player], self.active_player, "is not of type RL", self.player_types)
             return {"state": "play_or_shift", "ai_reward": None}, False, True # rewards round_finished, game_over
 
-    def playUntilAI(self, print_=False):
-        rewards        = {"state": "play_or_shift", "ai_reward": None}
-        gameOver       = False
-        round_finished = False
-        while len(self.players[self.active_player].hand) > 0:
-            current_player = self.active_player
-            if "RANDOM" in self.player_types[current_player]:
-                if  self.shifting_phase and self.nu_shift_cards>0:
-                    hand_idx_action = self.getRandomCard()
-                    card            = self.players[current_player].hand[hand_idx_action]
-                    if print_:
-                        print("[{}] {} {}\t shifts {}\tCard {}\tHand Index {}\t len {}".format(self.current_round, current_player, self.player_names[current_player], self.player_types[current_player], card, hand_idx_action, len(self.players[current_player].hand)))
-                else:
-                    card            = self.getRandomValidOption()
-                    hand_idx_action = self.players[self.active_player].hand.index(card)
-                    if print_:
-                        print("[{}] {} {}\t plays {}\tCard {}\tHand Index {}\t len {}".format(self.current_round, current_player, self.player_names[current_player], self.player_types[current_player], card, hand_idx_action, len(self.players[current_player].hand)))
-                rewards, round_finished, gameOver = self.step(hand_idx_action, print_)
-                if print_ and round_finished:
-                    print("")
-            else:
-                return rewards, round_finished, gameOver
-        # Game is over!
-        #CAUTION IF GAME OVER NO REWARDS ARE RETURNED
-        #rewards = {'state': 'play_or_shift', 'ai_reward': None}
-        return rewards, True, True
+
 
 
 
@@ -231,17 +320,8 @@ class schafkopf(game):
                     ai_reward = rewards["final_rewards"][1]
                 return [ai_reward, mean_random], self.correct_moves, gameOver
 
-    def getInColor(self):
-        # returns the leading color of the on_table_cards
-        # if only joker are played None is returned
-        for i, card in enumerate(self.on_table_cards):
-            if card is not None:
-                if card.value <15:
-                    return card.color
-        return None
-
     def getRandomPossCards(self, list, nuCards):
-        random.seed(None)
+        #random.seed(None)
         result = []
         for i in range(nuCards):
             tmp = random.randrange(len(list))
@@ -333,77 +413,12 @@ class schafkopf(game):
                 add_states.extend(self.getAdditionalState(i))
         return np.asarray([on_table+ on_hand+ played+ play_options+ add_states])
 
-    def getValidOptions(self, player):
-        # returns card of valid options
-        if self.shifting_phase and self.nu_shift_cards>0:
-            options = [x for x in range(len(self.players[player].hand))] # hand index
-        else:
-            options = self.getOptions(self.getInColor(), player) # hand index
-        # return as cards
-        return [self.players[player].hand[i] for i in options]
-
     def convertTakeHand(self, player, take_hand):
         converted_cards = []
         for card in take_hand:
             card.player = player.name
             converted_cards.append(card)
         return converted_cards
-
-    def step(self, card_idx, print_=False):
-        #Note that card_idx is a Hand Card IDX!
-        # it is not card.idx unique number!
-        self.shifting_phase = (self.shifted_cards<=self.nu_players*self.nu_shift_cards)
-        if self.shifting_phase and self.nu_shift_cards>0:
-            shift_round   = int(self.shifted_cards/self.nu_players)
-            self.shiftCard(card_idx, self.active_player, self.getShiftPlayer())
-            self.shifted_cards +=1
-
-            round_finished = False
-            if self.shifted_cards%self.nu_players == 0:
-                round_finished = True
-            #if print_: print("Shift Round:", shift_round, "Shifted Cards:", self.shifted_cards, "round_finished", round_finished)
-            if shift_round == (self.nu_shift_cards)-1 and round_finished:
-                if print_: print("\nShifting PHASE FINISHED!!!!!!\n")
-                for player in self.players:
-                    # convert cards of take hand card.player to correct player!
-                    player.take_hand = self.convertTakeHand(player, player.take_hand)
-                    player.hand.extend(player.take_hand)
-                    if print_: print(player.name, "takes now", player.take_hand, " all cards", player.hand)
-                self.shifted_cards  = 100
-                self.shifting_phase = False
-            self.active_player = self.getNextPlayer()
-            return {"state": "shift", "ai_reward": 0}, round_finished, False # rewards, round_finished, gameOver
-        else:
-            # in case card_idx is a simple int value
-            round_finished = False
-            # play the card_idx:
-            played_card = self.players[self.active_player].hand.pop(card_idx)
-            self.on_table_cards.append(played_card)
-            # Case round finished:
-            trick_rewards    = [0]*self.nu_players
-            on_table_win_idx = -1
-            player_win_idx   = -1
-            if len(self.on_table_cards) == self.nu_players:
-                winning_card, on_table_win_idx, player_win_idx = self.evaluateWinner()
-                trick_rewards[player_win_idx] = self.countResult([self.on_table_cards], self.players[player_win_idx].offhand)
-                self.current_round +=1
-                self.played_cards.extend(self.on_table_cards)
-                self.players[player_win_idx].appendCards(self.on_table_cards)
-                self.on_table_cards = []
-                self.active_player  = player_win_idx
-                round_finished = True
-
-            else:
-                self.active_player = self.getNextPlayer()
-
-            if round_finished and len(self.played_cards) == self.nu_cards*self.nu_players:
-                self.assignRewards()
-            if self.isGameFinished():
-                self.assignRewards()
-                for i in range(len(self.total_rewards)):
-                    self.total_rewards[i] +=self.rewards[i]
-    		#yes this is the correct ai reward in case all players are ai players.
-            return {"state": "play", "ai_reward": trick_rewards[player_win_idx], "on_table_win_idx": on_table_win_idx, "trick_rewards": trick_rewards, "player_win_idx": player_win_idx, "final_rewards": self.rewards}, round_finished, self.isGameFinished()
 
     def getAdditionalState(self, playeridx):
         # result = [would win, bgry color free]
@@ -433,37 +448,6 @@ class schafkopf(game):
         for card in self.played_cards:
             played[card.idx] = 1
         return on_table, on_hand, played
-
-    def getOptions(self, incolor, player, orderOptions=False):
-        # incolor = None -> Narr was played played before
-        # incolor = None -> You can start!
-        # Return Hand index
-
-        cards        = self.players[player].hand
-
-        options = []
-        hasColor = False
-        if incolor is None:
-            for i, card in enumerate(cards):
-                options.append(i)
-        else:
-            for i, card in enumerate(cards):
-                if card.color == incolor and card.value <15:
-                    options.append(i)
-                    hasColor = True
-                if card.value == 15: # append all joker
-                    options.append(i)
-
-        # if has not color and no joker append all cards!
-        # wenn man also eine Farbe aus ist!
-        if not hasColor:
-            options = [] # necessary otherwise joker double!
-            for i, card in enumerate(cards):
-                options.append(i)
-            if incolor is not None: # no do not check for joker here!
-                self.players[player].setColorFree(incolor)
-        if orderOptions: return sorted(options, key = lambda x: ( x[1].color,  x[1].value))
-        return options
 
 
     def hasJoker(self, cards):

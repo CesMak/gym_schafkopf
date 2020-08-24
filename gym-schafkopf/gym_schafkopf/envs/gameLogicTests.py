@@ -47,6 +47,14 @@ class gameLogic(unittest.TestCase):
         test_game.setDeclaration(test_game.declarations)
         print(test_game.matching)
 
+        print("\n\n Test get Options:")
+        print(test_game.on_table_cards)
+        opts  = test_game.getOptions(test_game.getInColor(test_game.on_table_cards), 0, orderOptions=False)
+        cards = test_game.getValidOptions(test_game.on_table_cards, 0)
+        print(cards)
+
+        print("\n\n Test playing random")
+        test_game.playUntilAI(print_=True)
 
 if __name__ == '__main__':
     unittest.main()
