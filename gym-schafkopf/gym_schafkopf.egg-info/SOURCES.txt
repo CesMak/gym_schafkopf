@@ -1,0 +1,5 @@
+gym_schafkopf.egg-info/PKG-INFO
+gym_schafkopf.egg-info/SOURCES.txt
+gym_schafkopf.egg-info/dependency_links.txt
+gym_schafkopf.egg-info/requires.txt
+gym_schafkopf.egg-info/top_level.txt
