@@ -12,25 +12,15 @@ class schafkopf(game):
         super().__init__(options_dict)
 
         # Specific for Schafkopf:
-        self.shifted_cards     = 0 # counts
-        self.nu_shift_cards    = options_dict["nu_shift_cards"] # shift 2 cards!  # set to 0 to disable
-        self.shifting_phase    = True
-        self.shift_option      = 2 # due to gym reset=2 ["left", "right", "opposide"]
-        self.correct_moves     = 0 # is not used or?!
+        self.decl_options   = ["weg", "ruf"] # , "hochzeit", "bettel", "solo"
+        self.solo_options   = []             # ["solo_e", "solo_g", "solo_h", "solo_s", "geier", "wenz"]
+        self.declarations   = []
+        self.matching       = {}   # type: Ramsch, Solo, Hochzeit, Bettel, Ruf, partners: index of partner to caller, spieler: index of spieler
         super().setup_game()       # is required here already for gym to work!
 
     def reset(self):
         self.nu_games_played +=1
-        self.shifted_cards  = 0
 
-        if self.shift_option <2:
-            self.shift_option += 1
-        else:
-            self.shift_option  = 0
-        if self.nu_shift_cards>0:
-            self.shifting_phase    = True
-        else:
-            self.shifting_phase    = False
         self.players           = []  # stores players object
         self.on_table_cards    = []  # stores card on the table
         self.played_cards      = []  # of one game # see also in players offhand!
@@ -40,6 +30,124 @@ class schafkopf(game):
         super().setup_game()
         self.active_player     = self.nextGamePlayer()
         self.correct_moves     = 0
+        for i in range (self.nu_players):
+            self.declarations.append("")
+
+    def assignDeclaration(self, cards, player_idx, decl="", use_random=False):
+        random.seed(None)
+        if use_random:
+            valid_options = self.getPossDeclarations(cards)
+            self.declarations[player_idx] = valid_options[random.randrange(len(valid_options))]
+        else:
+            self.declarations[player_idx] = decl
+
+    def randomInitDeclarations(self):
+        for i in range(self.nu_players):
+            self.assignDeclaration([self.players[i].hand], i, use_random=True)
+
+    def getWinningDeclaration(self, actual, new_decl):
+        if self.decl_options.index(new_decl)>self.decl_options.index(actual):
+            return True
+        return False
+
+    def getHighestDeclaration(self, declarations):
+        # simplify declarations
+        highest = "weg"
+        idx     = 0
+        for i, decl in enumerate(declarations):
+            if self.getWinningDeclaration(highest, decl):
+                highest = decl
+                idx     = i
+        return highest, idx
+
+    def getPossDeclarations(self, cards):
+        declarations = []
+        for i in self.decl_options:
+            if "hochzeit" in i:
+                trumps = self.getTrumps(cards)
+                if len(trumps)==1:
+                    declarations+=["hochzeit"]
+            elif not "hochzeit" in i:
+                declarations.append(i)
+        return declarations
+
+    def setDeclaration(self, prev_declarations, solo_decl="", ruf_decl="", use_random=True):
+        # set matching
+        # type = ramsch, solo_farbe, ruf_farbe, wenz, geier
+        # spieler = player index
+        # partner of the caller
+        #input prev_declarations from phase 1 see getPossDeclarations
+
+        if use_random and "solo" in self.decl_options:
+            solo_decl = self.solo_options[random.randrange(len(self.solo_options))]
+
+        highest, idx = self.getHighestDeclaration(prev_declarations)
+
+        if use_random and "ruf" in self.decl_options:
+            ruf_decl  = self.getRufDeclarations([self.players[idx].hand])
+            ruf_decl  = ruf_decl[random.randrange(len(ruf_decl))]
+
+        if highest=="solo":
+            self.matching["type"]    = solo_decl
+        elif highest=="weg":
+            self.matching["type"]    = "ramsch"
+        elif highest=="ruf":
+            self.matching["type"]    = ruf_decl
+            self.matching["partner"] = self.getPlayerIdxOfSpecificCard("A", ruf_decl.split("_")[1])
+        else: # hochzeit, bettel
+            self.matching["type"]    = highest
+        self.matching["spieler"] = idx
+
+    def getPlayerIdxOfSpecificCard(self, value, color):
+        for n, play in enumerate(self.players):
+            if super().hasSpecificCard(value, color, [play.hand], doConversion=True):
+                return n
+        print("error in:", "getPlayerIdxOfSpecificCard", "player with that ass/card was not found???!")
+        return None
+
+    def hasColoredCard(self, cards, color, without_trumpfs=True):
+        for card in cards:
+            my_list = ["7", "8", "9", "U", "O", "K", "10", "A"]
+            if without_trumpfs:
+                my_list = ["7", "8", "9", "K", "10", "A"]
+            for i in my_list:
+                if super().hasSpecificCard(i, color, cards, doConversion=True):
+                    return True
+        return False
+
+    def getRufDeclarations(self, cards):
+        declarations = []
+        for card in cards:
+            for color in ["E", "G", "S"]:
+                if self.hasColoredCard(cards, color) and not super().hasSpecificCard("A", color, cards, doConversion=True):
+                    declarations.append("ruf_"+color)
+        return declarations
+
+    def getAnyCards(self, cards, colors=["E", "G", "H", "S"], values=["7", "8", "9", "K", "10", "A"]):
+        found_cards = []
+        for card in cards:
+            for value in values:
+                for color in colors:
+                    card = super().getSpecificCard(value, color, cards, doConversion=True)
+                    if card is not None:
+                        found_cards.append(card)
+        return found_cards
+
+    def getTrumps(self, cards, trump_color="H"):
+        trump_cards = []
+        if trump_color is not None:
+            trump_cards+= self.getAnyCards(cards, colors=["H"])
+        trump_cards+= self.getAnyCards(cards, values=["U", "O"])
+        return trump_cards
+
+
+
+
+
+
+
+
+
 
 
     def play_ai_move(self, ai_card_idx, print_=False):

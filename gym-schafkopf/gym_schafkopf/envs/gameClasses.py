@@ -25,12 +25,17 @@ class card(object):
         return self.show()
     def __repr__(self):
         return self.show()
-    def show(self):
+
+    def getConversion(self):
         tmp = self.value
         for val, replace in self.value_conversion.items():
             if self.value == val:
                 tmp = replace
-        return str("{} of {}_{}".format(tmp, self.color, self.idx))
+                break
+        return tmp
+
+    def show(self):
+        return str("{} of {}_{}".format(self.getConversion(), self.color, self.idx))
 
 class deck(object):
     def __init__(self, nu_cards, colors=['B', 'G', 'R', 'Y'], value_conversion={}, seed=None):
@@ -314,13 +319,29 @@ class game(metaclass=abc.ABCMeta):
         for i in range(len(self.players)):
             print(self.player_names[i]+" ["+self.player_types[i]+"] ", self.players[i].hand)
 
-    def hasSpecificCard(self, cardValue, cardColor, cards):
+    def hasSpecificCard(self, cardValue, cardColor, cards, doConversion=False):
         for stich in cards:
             for card in stich:
                 if card is not None:
-                    if card.color == cardColor and card.value == cardValue:
+                    if doConversion:
+                        convValue = str(card.getConversion())
+                    else:
+                        convValue = card.value
+                    if card.color == cardColor and convValue == cardValue:
                         return True
         return False
+
+    def getSpecificCard(self, cardValue, cardColor, cards, doConversion=False):
+        for stich in cards:
+            for card in stich:
+                if card is not None:
+                    if doConversion:
+                        convValue = str(card.getConversion())
+                    else:
+                        convValue = card.value
+                    if card.color == cardColor and convValue == cardValue:
+                        return card
+        return None
 
     def cards2Idx(self, cardlist):
         result = []

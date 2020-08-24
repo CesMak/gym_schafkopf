@@ -9,6 +9,8 @@ You can play and test your trained neuronal network at **https://idgaming.de/**.
 * Langer (8 Karten):
   * Ramsch, Solo (Farbe, Wenz, Geier), Hochzeit, Ruf, Bettel, Aufgelegter Bettel, Solo Du
   * Herz ist Trumpf bei Bettel, Hochzeit, Ruf, Ramsch
+  * Herz ass kann niemals gerufen werden
+  * Hochzeit ist höher als Solo?
   * Ruf ass muss immer gelegt werden außer:
     + Wenn der Mitspieler mindestens vier Karten mit der Ruf-Sau in der Ruf-Farbe besitzt, kann er davonlaufen (unter der Ruf-Sau ausspielen), solange die Farbe noch nicht gespielt war und er noch alle vier Farbkarten in der Hand hält.
     + Nachdem die Ruf-Farbe bereits einmal gespielt war (und durch Davonlaufen nicht zugegeben wurde), kann die Ruf-Sau gespielt oder geschmiert werden. Wurde die Ruf-Sau nicht gesucht, so darf sie erst im letzten, dem 8. Stich, zugegeben werden. Der Mitspieler, der die Ruf-Sau hat, kann diese zu jedem Zeitpunkt anspielen, sofern er an der Reihe ist.
@@ -22,8 +24,11 @@ You can play and test your trained neuronal network at **https://idgaming.de/**.
 * Ramsch: (einer zahlt alles, bei mehreren verlierern aufgeteilt, wenn alle gleich kostet 0
 
 ## Ablauf
-* Declarations (hoechstes gewinnt)
+* Declarations
+* phase1: weiter, solo, bettel, ruf, hochzeit
+* wenn noetig: phase2: ramsch (wenn alle), solo=(farbe, geier wenz),
 
+ (hoechstes gewinnt) (hoechstes gewinnt)
 ## Installation
 ```bash
 git clone git@github.com:CesMak/gyms.git
@@ -66,8 +71,8 @@ pyreverse -o png gameClasses.py witches.py
 ## Changelog
 |Date|Description|commit|
 |-|---------|-|
-|2020.08.14| |initial_commit  |
-|2020.08.14| |initial_commit  |
+|2020.08.14| | init  |
+|2020.08.14| | testing_random_playing  |
 
 ## TODO
 -
