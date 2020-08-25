@@ -168,12 +168,22 @@ class game(metaclass=abc.ABCMeta):
         myDeck.shuffle()
         return myDeck
 
+    def hand2Cards(self, playeridx, cards):
+        return [self.players[playeridx].hand[i] for i in cards]
+
     def idx2Card(self, idx):
         # input unique card index output: card object
         myDeck = deck(self.nu_cards, self.colors, self.value_conversion, self.seed)
         for card in myDeck.cards:
             if card.idx == idx:
                 return card
+
+    def idxOfName(self, cardValue, cardColor):
+        cards = deck(self.nu_cards, self.colors, self.value_conversion, self.seed).cards
+        card = self.getSpecificCard(cardValue, cardColor, [cards], doConversion=True)
+        if card is not None:
+            return card.idx
+        return None
 
     def idx2Hand(self, idx, player_idx):
         #returns hand index of unique idx

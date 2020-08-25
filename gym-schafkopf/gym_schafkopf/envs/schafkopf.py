@@ -15,6 +15,7 @@ class schafkopf(game):
         self.decl_options   = ["weg", "ruf"] # , "hochzeit", "bettel", "solo"
         self.solo_options   = []             # ["solo_e", "solo_g", "solo_h", "solo_s", "geier", "wenz"]
         self.declarations   = []
+        self.phase          = "declaration"  # declaration, (contra, retour) playing
         self.matching       = {}   # type: Ramsch, Solo, Hochzeit, Bettel, Ruf, partners: index of partner to caller, spieler: index of spieler
         super().setup_game()       # is required here already for gym to work!
 
@@ -71,6 +72,22 @@ class schafkopf(game):
                 declarations.append(i)
         return declarations
 
+    def setTrickOrder(self):
+        trick_order = []
+        if "ruf" in self.matching["type"] or "hochzeit" in self.matching["type"] or "ramsch" in self.matching["type"] or "solo" in self.matching["type"]:
+            for i in ["O", "U"]:
+                for j in ["E", "G", "H", "S"]:
+                    trick_order.append(self.idxOfName(i, j))
+            for i in ["A", "10", "K", "9", "8", "7"]:
+                trick_order.append(self.idxOfName(i, self.matching["trump"]))
+            other_cols  = ["E", "G", "H", "S"]
+            others_cols = other_cols.remove(self.matching["trump"])
+            for z in other_cols:
+                for i in ["A", "10", "K", "9", "8", "7"]:
+                    trick_order.append(self.idxOfName(i, z))
+        #print(super().idxList2Cards(list(reversed(trick_order))))
+        self.matching["order"] = list(reversed(trick_order))
+
     def setDeclaration(self, prev_declarations, solo_decl="", ruf_decl="", use_random=True):
         # set matching
         # type = ramsch, solo_farbe, ruf_farbe, wenz, geier
@@ -98,8 +115,11 @@ class schafkopf(game):
             self.matching["partner"] = self.getPlayerIdxOfSpecificCard("A", ruf_decl.split("_")[1])
         else: # hochzeit, bettel
             self.matching["type"]    = highest
+
         self.matching["spieler"]     = idx
         self.matching["trump"]       = "H"
+
+        self.setTrickOrder()
 
     def getPlayerIdxOfSpecificCard(self, value, color):
         for n, play in enumerate(self.players):
@@ -117,6 +137,9 @@ class schafkopf(game):
                 if super().hasSpecificCard(i, color, cards, doConversion=True):
                     return True
         return False
+
+    def getColoredCards(self, cards, color):
+        return self.getAnyCards(cards, colors=[color], values=["7", "8", "9", "K", "10", "A"])
 
     def getRufDeclarations(self, cards):
         declarations = []
@@ -165,6 +188,8 @@ class schafkopf(game):
                 return first_card.color
 
     def getOptions(self, incolor, player, orderOptions=False):
+        # TODO incooperate davonlaufen!
+        # TODO incooperate Ass muss gelegt werden
         # return hand position of this card
         # incolor is None if there is no card yet on the table
         # incolor is trump if o or u or trump color is played
@@ -172,35 +197,67 @@ class schafkopf(game):
 
         cards        = self.players[player].hand
         options      = []
-        hasColor     = False
-        hasTrump     = False
         if incolor is None:
             for i, card in enumerate(cards):
                 options.append(i)
         else:
-            for i, card in enumerate(cards):
-                if card.color == incolor:
-                    options.append(i)
-                    hasColor = True
-                elif incolor == "trump":
-                    isTrump, _     = self.isTrump(card, self.matching["trump"])
-                    print(card, isTrump)
-                    if isTrump:
-                        options.append(i)
-                        hasTrump = True
+            if incolor == "trump":
+                trumps = self.getTrumps([cards])
+                if len(trumps) == 0:
+                    options = list(range(len(cards)))
+                    self.players[player].setTrumpFree()
+                else:
+                    for i in trumps:
+                        options.append(super().idx2Hand(i.idx, player))
 
-        if not hasColor and incolor is not None: # no do not check for joker here!
-            self.players[player].setColorFree(incolor)
-        if not hasTrump and incolor is not None: # no do not check for joker here!
-            self.players[player].setTrumpFree()
+            else: # color is played
+                col_cards = self.getColoredCards([cards], incolor)
+                if len(col_cards) == 0:
+                    options = list(range(len(cards)))
+                    self.players[player].setColorFree(incolor)
+                else:
+                    for i in col_cards:
+                        options.append(super().idx2Hand(i.idx, player))
+
         if orderOptions: return sorted(options, key = lambda x: ( x[1].color,  x[1].value))
-        return options
 
+        # get options for ruf game:
+
+        if "ruf" in self.matching["type"] and self.matching["partner"] == player:
+            called_color = self.matching["type"].split("_")[1]
+            if not len(options)>3 and incolor == called_color: # sonst davonlaufen
+                #try to get ass
+                cards = super().hand2Cards(player, options)
+                card = super().getSpecificCard("A", called_color, [cards], doConversion=True)
+                if card is not None: return [super().idx2Hand(card.idx, player)]
+        return options
 
     def getValidOptions(self, cards, player):
         options = self.getOptions(self.getInColor(cards), player) # hand index
         # return as cards
         return [self.players[player].hand[i] for i in options]
+
+    def evaluateWinner(self):
+        #uses on_table_cards to evaluate the winner of one round
+        #returns winning card
+        #player_win_idx: player that one this game! (0-3)
+        #on_table_win_idx: player in sequence that one!
+        highest_value    = 0
+        winning_card     = self.on_table_cards[0]
+
+        if "ruf" in self.matching["type"] or "hochzeit" in self.matching["type"] or "ramsch" in self.matching["type"]:
+            for i, card in enumerate(self.on_table_cards):
+                rank = self.matching["order"].index(card.idx)
+                if card is not None and rank > highest_value:
+                    highest_value = rank
+                    winning_card = card
+                    on_table_win_idx = i
+            player_win_idx = self.player_names.index(winning_card.player)
+        else: # solo
+            print("TODO")
+        print(winning_card, on_table_win_idx, player_win_idx)
+        return winning_card, on_table_win_idx, player_win_idx
+
 
     def playUntilAI(self, print_=False):
         rewards        = {"state": "play_or_shift", "ai_reward": None}
@@ -233,7 +290,7 @@ class schafkopf(game):
         on_table_win_idx = -1
         player_win_idx   = -1
         if len(self.on_table_cards) == self.nu_players:
-            #winning_card, on_table_win_idx, player_win_idx = self.evaluateWinner()
+            winning_card, on_table_win_idx, player_win_idx = self.evaluateWinner()
             #trick_rewards[player_win_idx] = self.countResult([self.on_table_cards], self.players[player_win_idx].offhand)
             self.current_round +=1
             self.played_cards.extend(self.on_table_cards)
@@ -383,25 +440,6 @@ class schafkopf(game):
             if print_: print(enemy.name, enemy.hand, enemy.colorFree, self.idxList2Cards(cards))
         result["matches"] = round((matches/start_cards)*100, 1)
         return result
-
-    def evaluateWinner(self):
-        #uses on_table_cards to evaluate the winner of one round
-        #returns winning card
-        #player_win_idx: player that one this game! (0-3)
-        #on_table_win_idx: player in sequence that one!
-        highest_value    = 0
-        winning_card     = self.on_table_cards[0]
-        incolor          = self.getInColor()
-        on_table_win_idx = 0
-        if  incolor is not None:
-            for i, card in enumerate(self.on_table_cards):
-                # Note 15 is a Jocker
-                if card is not None and ( card.value > highest_value and card.color == incolor and card.value<15):
-                    highest_value = card.value
-                    winning_card = card
-                    on_table_win_idx = i
-        player_win_idx = self.player_names.index(winning_card.player)
-        return winning_card, on_table_win_idx, player_win_idx
 
     def getState(self):
         play_options = self.getBinaryOptions(self.active_player, self.nu_players, self.nu_cards)
