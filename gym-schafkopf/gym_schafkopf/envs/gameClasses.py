@@ -318,7 +318,7 @@ class game(metaclass=abc.ABCMeta):
 
     def assignRewards(self):
         for i, player in enumerate(self.players):
-            self.rewards[i] = self.countResult(player.offhand, player.offhand)
+            self.rewards[i] = self.countResult(player.offhand)
 
     def isGameFinished(self):
         cards = 0

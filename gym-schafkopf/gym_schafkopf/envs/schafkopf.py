@@ -121,6 +121,19 @@ class schafkopf(game):
 
         self.setTrickOrder()
 
+        if "ruf" in self.matching["type"]:
+            self.matching["nuLaufende"]  = self.getNuLaufende(self.players[self.matching["spieler"]].hand+self.players[self.matching["partner"]].hand)
+
+    def getNuLaufende(self, cards):
+        counter        = 0
+        for idx_order in reversed(self.matching["order"]):
+            counter_before = counter
+            for m in super().cards2Idx(cards):
+                if idx_order == m:
+                    counter +=1
+            if counter_before == counter:
+                return counter
+
     def getPlayerIdxOfSpecificCard(self, value, color):
         for n, play in enumerate(self.players):
             if super().hasSpecificCard(value, color, [play.hand], doConversion=True):
@@ -222,7 +235,6 @@ class schafkopf(game):
         if orderOptions: return sorted(options, key = lambda x: ( x[1].color,  x[1].value))
 
         # get options for ruf game:
-
         if "ruf" in self.matching["type"] and self.matching["partner"] == player:
             called_color = self.matching["type"].split("_")[1]
             if not len(options)>3 and incolor == called_color: # sonst davonlaufen
@@ -291,7 +303,7 @@ class schafkopf(game):
         player_win_idx   = -1
         if len(self.on_table_cards) == self.nu_players:
             winning_card, on_table_win_idx, player_win_idx = self.evaluateWinner()
-            #trick_rewards[player_win_idx] = self.countResult([self.on_table_cards], self.players[player_win_idx].offhand)
+            trick_rewards[player_win_idx] = self.countResult([self.on_table_cards])
             self.current_round +=1
             self.played_cards.extend(self.on_table_cards)
             self.players[player_win_idx].appendCards(self.on_table_cards)
@@ -301,19 +313,77 @@ class schafkopf(game):
         else:
             self.active_player = self.getNextPlayer()
 
-        # if round_finished and len(self.played_cards) == self.nu_cards*self.nu_players:
-        #     self.assignRewards()
-        # if self.isGameFinished():
-        #     self.assignRewards()
-        #     for i in range(len(self.total_rewards)):
-        #         self.total_rewards[i] +=self.rewards[i]
+        if round_finished and len(self.played_cards) == self.nu_cards*self.nu_players:
+            self.assignRewards()
+
+        if self.isGameFinished():
+            self.getPoints(print_)
+            for i in range(len(self.total_rewards)):
+                self.total_rewards[i] +=self.rewards[i]
 
 		#yes this is the correct ai reward in case all players are ai players.
         return {"state": "play", "ai_reward": trick_rewards[player_win_idx], "on_table_win_idx": on_table_win_idx, "trick_rewards": trick_rewards, "player_win_idx": player_win_idx, "final_rewards": self.rewards}, round_finished, self.isGameFinished()
 
 
+    def countResult(self, input_cards):
+        #input_cards = [[card1, card2, card3, card4], [stich2], ...]
+        # in class player
+        result = 0
+        for stich in input_cards:
+            for card in stich:
+                if card is not None:
+                    for cards_value, value in zip(["A", "10", "K", "O", "U"], [11, 10, 4, 3, 2]):
+                        if (str(card.getConversion())) == cards_value:
+                            result += value
+                            break
+        return result
 
+    def getPoints(self, print_=False):
+        # according to self.rewards get the final Points and store them in the rewards!
+        if "ruf" in self.matching["type"]:
+            players_ruf           = [self.matching["spieler"], self.matching["partner"]]
+            enemys                = list(range(4))
+            enemys                = [i for j, i in enumerate(enemys) if j not in players_ruf]
 
+            ruf_points            = 0
+            ruf_names             = []
+            ruf_wins              = 0
+            money                 = 5
+
+            for j in players_ruf:
+                ruf_names.append(self.players[j].name)
+                ruf_points  += self.rewards[j]
+            if ruf_points>60:
+                ruf_wins = 1
+
+            # get costs of this game:
+            if ruf_wins:
+                tmp = ruf_points
+            else:
+                tmp = 120-ruf_points
+
+            if tmp>90:
+                money+=5
+            if tmp==120:
+                money+=5
+
+            # TODO assign ober etc.
+            if self.matching["nuLaufende"]>2:
+                money +=self.matching["nuLaufende"]*5
+
+            if not ruf_wins:
+                money*=-1
+
+            for j in players_ruf:
+                self.rewards[j] = money
+            for i in enemys:
+                self.rewards[i] = money*-1
+
+            if print_:
+                print("")
+                print(self.matching["type"]+": "+ruf_names[0]+" called "+ruf_names[1])
+                print("poitns", ruf_points, "--> money: ", money)
+                print("Rewards:", self.rewards)
 
 
 
@@ -503,28 +573,6 @@ class schafkopf(game):
     def hasBlueEleven(self, cards):
         return self.hasSpecificCard(11, "B", cards)
 
-
-    def countResult(self, input_cards, offhandCards):
-        #input_cards = [[card1, card2, card3, card4], [stich2], ...]
-        # in class player
-        # get the current Reward (Evaluate offhand cards!)
-        negative_result = 0
-        # input_cards = self.offhand
-        for stich in input_cards:
-            for card in stich:
-                if card is not None:
-                    if card.color == "R" and card.value <15 and card.value!=11 and not self.hasRedEleven(offhandCards):
-                        negative_result -=1
-                    if card.color == "R" and card.value <15 and card.value!=11 and self.hasRedEleven(offhandCards):
-                        negative_result -=1*2
-                    if not self.hasBlueEleven(offhandCards):
-                        if card.color == "G" and card.value == 11:
-                            negative_result -= 5
-                        if card.color == "G" and card.value == 12:
-                            negative_result -= 10
-                    if card.color == "Y" and card.value == 11:
-                        negative_result+=5
-        return negative_result
 
     def getBinaryOptions(self, player, nu_players, nu_cards):
         #returns 0....1... x1 array BGRY 0...15 sorted

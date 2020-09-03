@@ -54,7 +54,9 @@ class gameLogic(unittest.TestCase):
         print(cards)
 
         print("\n\n Test playing random")
-        test_game.playUntilAI(print_=True)
+        rewards, round_finished, gameOver =  test_game.playUntilAI(print_=True)
+        print("Rewards:")
+        print(rewards)
 
 if __name__ == '__main__':
     unittest.main()
