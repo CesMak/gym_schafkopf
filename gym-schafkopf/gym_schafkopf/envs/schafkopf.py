@@ -214,7 +214,6 @@ class schafkopf(game):
         if incolor is None:
             for i, card in enumerate(cards):
                 options.append(i)
-            print(player, incolor, options)
         else:
             if incolor == "trump":
                 trumps = self.getTrumps([cards])
@@ -415,6 +414,24 @@ class schafkopf(game):
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ######
 ####  currently not used functions:::
 ####
@@ -585,23 +602,6 @@ class schafkopf(game):
             played[card.idx] = 1
         return on_table, on_hand, played
 
-
-    def hasJoker(self, cards):
-        for i in ["Y", "R", "G", "B"]:
-            if super().hasSpecificCard(15, i, cards):
-                return True
-        return False
-
-    def hasYellowEleven(self, cards):
-        return self.hasSpecificCard(11, "Y", cards)
-
-    def hasRedEleven(self, cards):
-        return self.hasSpecificCard(11, "R", cards)
-
-    def hasBlueEleven(self, cards):
-        return self.hasSpecificCard(11, "B", cards)
-
-
     def getBinaryOptions(self, player, nu_players, nu_cards):
         #returns 0....1... x1 array BGRY 0...15 sorted
         options_list = [0]*nu_players*nu_cards
@@ -610,41 +610,3 @@ class schafkopf(game):
         for idx in unique_idx:
             options_list[idx] = 1
         return options_list
-
-
-
-#### custom
-#### custom functions very game type specific functions
-#### custom
-    def shiftCard(self, card_idx, current_player, next_player):
-        # shift round = 0, 1, ... (for 2 shifted cards)
-        #print("I shift now hand idx", card_idx, "from", self.players[current_player].name, "to", self.players[next_player].name)
-        card = self.players[current_player].hand.pop(card_idx) # wenn eine Karte weniger index veringern!
-        self.players[next_player].take_hand.append(card)
-
-
-    def getShiftPlayer(self):
-        # works FOR 4 Players only!
-        if self.shift_option==0:
-            return self.getNextPlayer_()
-        elif self.shift_option==1:
-            return self.getPreviousPlayer(self.active_player)
-        elif self.shift_option==2: # opposide
-            return self.getPreviousPlayer(self.getPreviousPlayer(self.active_player))
-        else:
-            print("ERROR!!!! TO BE IMPLEMENTED!")
-            raise
-
-    def getShiftOptions(self):
-        # Return all options to shift 2 not unique card idx.
-        # returns:  [[0, 1], [0, 2], [0, 3], [0, 4], [0, 5], [0, 6], [0, 7], [0, 8], [0, 9], [0, 10], [0, 11], [0, 12], [0, 13], [0, 14], [1, 2], [1
-        n   = len(self.players[self.active_player].hand)
-        i   = 0
-        options = []
-        for j in range(0, n-1):
-            tmp = i
-            while tmp<n-1:
-                options.append([j, tmp+1])
-                tmp +=1
-            i = i+1
-        return options

@@ -18,7 +18,7 @@ class gameLogic(unittest.TestCase):
         print("\n")
         return test_game
 
-    @unittest.skip("demonstrating skipping")
+    #@unittest.skip("demonstrating skipping")
     def test_deck(self):
         # worked: 24.08.2020
         test_game = self.initGame(opts_rnd, seed=22)
@@ -59,7 +59,7 @@ class gameLogic(unittest.TestCase):
         print("Rewards:")
         print(rewards)
 
-    @unittest.skip("demonstrating skipping")
+    #@unittest.skip("demonstrating skipping")
     def test_laufende(self):
         test_game = self.initGame(opts_rnd, seed=25)
         assert test_game.active_player == 0
@@ -87,7 +87,7 @@ class gameLogic(unittest.TestCase):
         rewards, round_finished, gameOver =  test_game.playUntilAI(print_=True)
         assert rewards["final_rewards"][0] == -25
 
-    @unittest.skip("demonstrating skipping")
+    #@unittest.skip("demonstrating skipping")
     def test_trumpFree(self):
         test_game = self.initGame(opts_rnd, seed=67)
         assert len(test_game.getTrumps([test_game.players[1].hand])) == 0
@@ -126,7 +126,7 @@ class gameLogic(unittest.TestCase):
         assert int(test_game.players[2].trumpFree) == 0
         assert int(test_game.players[3].trumpFree) == 0
 
-    @unittest.skip("demonstrating skipping")
+    #@unittest.skip("demonstrating skipping")
     def test_rufOptions(self):
         test_game = self.initGame(opts_rnd, seed=67)
         assert len(test_game.getTrumps([test_game.players[1].hand])) == 0
@@ -155,7 +155,7 @@ class gameLogic(unittest.TestCase):
         print(cards)
         assert len(cards) == 6
 
-    @unittest.skip("demonstrating skipping")
+    #@unittest.skip("demonstrating skipping")
     def test_winner(self):
         test_game = self.initGame(opts_rnd, seed=67)
         assert len(test_game.getTrumps([test_game.players[1].hand])) == 0
@@ -193,16 +193,24 @@ class gameLogic(unittest.TestCase):
         print(test_game.matching)
 
         print("\n\n Test playing")
-        for i in [2,3,2,6, 1,0,0,0, 2,2,1,0, 4,3,2,0, 0]:
+        for i in [2,3,2,6, 1,0,0,0, 2,2,1,0, 4,3,2,0, 0,0,0,0, 0,0,0,0]:
             current_player = test_game.active_player
             card = test_game.players[current_player].hand[i]
             test_game.getRandomValidOption() # this is relevant!!!!!!!!! otherwise trumpFree and colorFree is not validated!
             print(test_game.current_round, test_game.player_names[current_player], test_game.player_types[current_player], card, len(test_game.players[current_player].hand), test_game.players[current_player].colorFree, test_game.players[current_player].trumpFree)
             rewards, round_finished, gameOver = test_game.step(i, True)
 
-        # Max muesste hier nun auch Schelle frei sein!
-        print(test_game.players[test_game.active_player].hand)
+        # Max muesste eichel frei sein
+        # lea gruen und trumpf
+        # jo greun und schelle
+        # tim gruen
 
+        assert test_game.players[0].colorFree[0] == 1.0
+        assert test_game.players[1].colorFree[1] == 1.0
+        assert test_game.players[1].trumpFree    == 1.0
+        assert test_game.players[2].colorFree[1] == 1.0
+        assert test_game.players[2].colorFree[3] == 1.0
+        assert test_game.players[3].colorFree[1] == 1.0
 
 
 if __name__ == '__main__':
