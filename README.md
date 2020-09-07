@@ -74,7 +74,10 @@ pyreverse -o png gameClasses.py witches.py
 |2020.08.14| | init  |
 |2020.08.14| | testing_random_playing  |
 |2020.08.14| included_declarations see gameLogicTests | included_declarations  |
-next step: random playing...
+|2020.08.14| included rewarding and final money for ruf | added_money_ruf  |
+|2020.08.14| included trump free| added_trump_free  |
+|2020.08.14| added more testes and fixed game Logic bugs | fixed_gameLogic_Bugs  |
+next step: check why colorFree not working
 
 
 ## TODO

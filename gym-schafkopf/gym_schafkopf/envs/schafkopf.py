@@ -72,16 +72,16 @@ class schafkopf(game):
                 declarations.append(i)
         return declarations
 
-    def setTrickOrder(self):
+    def setTrickOrder(self, trump="H"):
         trick_order = []
         if "ruf" in self.matching["type"] or "hochzeit" in self.matching["type"] or "ramsch" in self.matching["type"] or "solo" in self.matching["type"]:
             for i in ["O", "U"]:
                 for j in ["E", "G", "H", "S"]:
                     trick_order.append(self.idxOfName(i, j))
             for i in ["A", "10", "K", "9", "8", "7"]:
-                trick_order.append(self.idxOfName(i, self.matching["trump"]))
+                trick_order.append(self.idxOfName(i, trump))
             other_cols  = ["E", "G", "H", "S"]
-            others_cols = other_cols.remove(self.matching["trump"])
+            others_cols = other_cols.remove(trump)
             for z in other_cols:
                 for i in ["A", "10", "K", "9", "8", "7"]:
                     trick_order.append(self.idxOfName(i, z))
@@ -119,7 +119,7 @@ class schafkopf(game):
         self.matching["spieler"]     = idx
         self.matching["trump"]       = "H"
 
-        self.setTrickOrder()
+        self.setTrickOrder(trump=self.matching["trump"])
 
         if "ruf" in self.matching["type"]:
             self.matching["nuLaufende"]  = self.getNuLaufende(self.players[self.matching["spieler"]].hand+self.players[self.matching["partner"]].hand)
@@ -210,21 +210,24 @@ class schafkopf(game):
 
         cards        = self.players[player].hand
         options      = []
+
         if incolor is None:
             for i, card in enumerate(cards):
                 options.append(i)
+            print(player, incolor, options)
         else:
             if incolor == "trump":
                 trumps = self.getTrumps([cards])
+                #print("in trump,", trumps, player, incolor, cards)
                 if len(trumps) == 0:
                     options = list(range(len(cards)))
                     self.players[player].setTrumpFree()
                 else:
                     for i in trumps:
                         options.append(super().idx2Hand(i.idx, player))
-
             else: # color is played
                 col_cards = self.getColoredCards([cards], incolor)
+                #print(incolor, player, col_cards)
                 if len(col_cards) == 0:
                     options = list(range(len(cards)))
                     self.players[player].setColorFree(incolor)
@@ -237,11 +240,32 @@ class schafkopf(game):
         # get options for ruf game:
         if "ruf" in self.matching["type"] and self.matching["partner"] == player:
             called_color = self.matching["type"].split("_")[1]
+
+            # wenn ruf farbe angespielt wird muss partner die Ass reinspielen:
             if not len(options)>3 and incolor == called_color: # sonst davonlaufen
                 #try to get ass
                 cards = super().hand2Cards(player, options)
                 card = super().getSpecificCard("A", called_color, [cards], doConversion=True)
                 if card is not None: return [super().idx2Hand(card.idx, player)]
+
+            # wenn keine Karte angespielt ist darf rufspieler eine andere Karte der ruffarbe nicht spielen (außer das Ass)
+            # außer er kann davonlaufen
+            elif incolor is None:
+                # delete ruf card options except eichel of options
+                new_options = []
+                cards = super().hand2Cards(player, options)
+                for j in cards:
+                    if not called_color == j.color:
+                        new_options.append(j)
+                ass_card = super().getSpecificCard("A", called_color, [cards], doConversion=True)
+                if ass_card is not None:
+                    new_options.append(ass_card)
+                    options = []
+                    for i in new_options:
+                        options.append(super().idx2Hand(i.idx, player))
+                    return options
+                else: # ass is already played do not change anything:
+                    return options
         return options
 
     def getValidOptions(self, cards, player):
@@ -258,6 +282,10 @@ class schafkopf(game):
         winning_card     = self.on_table_cards[0]
 
         if "ruf" in self.matching["type"] or "hochzeit" in self.matching["type"] or "ramsch" in self.matching["type"]:
+            # do a reordering according to incolor! (otherwise eichel beats green etc.)
+            incolor = self.getInColor(self.on_table_cards)
+            if incolor is not None and incolor != "trump" and incolor != self.matching["trump"]:
+                self.setTrickOrder(incolor)
             for i, card in enumerate(self.on_table_cards):
                 rank = self.matching["order"].index(card.idx)
                 if card is not None and rank > highest_value:
