@@ -18,7 +18,7 @@ class gameLogic(unittest.TestCase):
         print("\n")
         return test_game
 
-    #@unittest.skip("demonstrating skipping")
+    @unittest.skip("demonstrating skipping")
     def test_deck(self):
         # worked: 24.08.2020
         test_game = self.initGame(opts_rnd, seed=22)
@@ -59,7 +59,7 @@ class gameLogic(unittest.TestCase):
         print("Rewards:")
         print(rewards)
 
-    #@unittest.skip("demonstrating skipping")
+    @unittest.skip("demonstrating skipping")
     def test_laufende(self):
         test_game = self.initGame(opts_rnd, seed=25)
         assert test_game.active_player == 0
@@ -87,7 +87,7 @@ class gameLogic(unittest.TestCase):
         rewards, round_finished, gameOver =  test_game.playUntilAI(print_=True)
         assert rewards["final_rewards"][0] == -25
 
-    #@unittest.skip("demonstrating skipping")
+    @unittest.skip("demonstrating skipping")
     def test_trumpFree(self):
         test_game = self.initGame(opts_rnd, seed=67)
         assert len(test_game.getTrumps([test_game.players[1].hand])) == 0
@@ -126,7 +126,7 @@ class gameLogic(unittest.TestCase):
         assert int(test_game.players[2].trumpFree) == 0
         assert int(test_game.players[3].trumpFree) == 0
 
-    #@unittest.skip("demonstrating skipping")
+    @unittest.skip("demonstrating skipping")
     def test_rufOptions(self):
         test_game = self.initGame(opts_rnd, seed=67)
         assert len(test_game.getTrumps([test_game.players[1].hand])) == 0
@@ -155,7 +155,7 @@ class gameLogic(unittest.TestCase):
         print(cards)
         assert len(cards) == 6
 
-    #@unittest.skip("demonstrating skipping")
+    @unittest.skip("demonstrating skipping")
     def test_winner(self):
         test_game = self.initGame(opts_rnd, seed=67)
         assert len(test_game.getTrumps([test_game.players[1].hand])) == 0
@@ -180,6 +180,7 @@ class gameLogic(unittest.TestCase):
         print(test_game.active_player)
         assert (test_game.active_player == 0)
 
+    @unittest.skip("demonstrating skipping")
     def test_colorFree(self):
         test_game = self.initGame(opts_rnd, seed=67)
         assert len(test_game.getTrumps([test_game.players[1].hand])) == 0
@@ -212,6 +213,111 @@ class gameLogic(unittest.TestCase):
         assert test_game.players[2].colorFree[3] == 1.0
         assert test_game.players[3].colorFree[1] == 1.0
 
+    @unittest.skip("demonstrating skipping")
+    def test_gymEnvState(self):
+        import gym
+        import gym_schafkopf
+        env = gym.make("Schafkopf-v1", options={"names": ["Max", "Lea", "Jo", "Tim"], "type": ["RANDOM", "RANDOM", "RANDOM", "RANDOM"], "nu_cards": 8, "active_player": 3, "seed": 67, "colors": ['E', 'G', 'H', 'S'], "value_conversion": {1: "7", 2: "8", 3: "9", 4: "U", 5: "O", 6: "K", 7: "10", 8: "A"}})
+        env.reset()
+
+        env.my_game.printHands()
+        print("")
+
+        cards_ordered = []
+        for j in range(32):
+            cards_ordered.append(env.my_game.idx2Card(j))
+
+        print("Cards sorted by index:")
+        print(cards_ordered,"\n")
+
+        # Test Valid Options:
+        play_options = env.my_game.getBinaryOptions(env.my_game.active_player, env.my_game.nu_players, env.my_game.nu_cards)
+        cards        = env.my_game.state2Cards(play_options)
+        assert (len(cards) == 8)
+        print("")
+        print("Options Max:", cards)
+        print("Vector list:", play_options)
+
+        print("\nDeclarations")
+        env.my_game.randomInitDeclarations()
+        print(env.my_game.declarations)
+        print(env.my_game.getHighestDeclaration(env.my_game.declarations))
+        env.my_game.setDeclaration(env.my_game.declarations)
+        print(env.my_game.matching)
+
+        print("\nPlay some cards")
+        for i in [2,3,2,6, 1,0,0,0, 2,2,1,0, 4,3,2,0, 0,0,0,0, 0,0]:
+            current_player = env.my_game.active_player
+            card = env.my_game.players[current_player].hand[i]
+            env.my_game.getRandomValidOption() # this is relevant!!!!!!!!! otherwise trumpFree and colorFree is not validated!
+            print(env.my_game.current_round, env.my_game.player_names[current_player], env.my_game.player_types[current_player], card, len(env.my_game.players[current_player].hand))
+            rewards, round_finished, gameOver = env.my_game.step(i, True)
+
+        # Test cards_state:
+        print("\nTest played cards state")
+        on_table, on_hand, played =  env.my_game.getmyState(env.my_game.active_player, env.my_game.nu_players, env.my_game.nu_cards)
+        print("Table      :",  env.my_game.state2Cards(on_table))
+        print("Vector list:", on_table)
+        assert on_table[6] == 1
+
+        print("Hand       :",  env.my_game.state2Cards(on_hand))
+        print("Vector list:", on_hand)
+        assert on_hand.count(1) == 3
+
+        print("played       :",  env.my_game.state2Cards(played))
+        print("Vector list:", played)
+        print("NOTE: played cards are invisible cards cards currently on the table are not played cards!")
+        assert played.count(1) ==20
+
+        # Test additional infos:
+        print("\nGet additional States")
+        add_states = [] #(nu_players-1)*6 = 18x1  enemy_1: [would_win, eghz color free, trumpfree]
+        for i in range(len(env.my_game.players)):
+            if i!=env.my_game.active_player:
+                add_states.extend(env.my_game.getAdditionalState(i))
+        print(add_states, len(add_states))
+
+        matching = env.my_game.getMatchingBinary(env.my_game.active_player)
+        print("Matching of", env.my_game.player_names[env.my_game.active_player], env.my_game.active_player, "partner:", env.my_game.matching["partner"], matching)
+
+        print("\nNow print the whole state nicely:")
+        env.my_game.printCurrentState()
+        # Result should look like this:
+        # K of G_13 0 0
+        # K of G_13 0 0
+        # K of G_13 0 0
+        # 	 on_table [10 of E_6, K of G_13]
+        # 	 on_hand [10 of H_22, A of H_23, U of S_27]
+        # 	 played [7 of E_0, 8 of E_1, 9 of E_2, U of E_3, O of E_4, K of E_5, A of E_7, 7 of G_8, 8 of G_9, 9 of G_10, U of G_11, O of G_12, 10 of G_14, A of G_15, 7 of H_16, 9 of H_18, 7 of S_24, 8 of S_25, 10 of S_30, A of S_31]
+        # 	 options [10 of H_22, A of H_23, U of S_27]
+        # 	 partners: Jo_2(you) play with Lea
+        # 	 Add_state for  Max
+        # 	 	  would_win 1 is free of trump 0 color(EGHZ) free [1 0 0 0]
+        # 	 Add_state for  Lea
+        # 	 	  would_win 0 is free of trump 1 color(EGHZ) free [0 1 0 0]
+        # 	 Add_state for  Tim
+        # 	 	  would_win 0 is free of trump 0 color(EGHZ) free [0 1 0 0]
+
+    def test_gymEnvPlaying(self):
+        # learning
+        # only RL player train against each other!
+        import gym
+        import gym_schafkopf
+        env = gym.make("Schafkopf-v1", options={"names": ["Max", "Lea", "Jo", "Tim"], "type": ["RL", "RL", "RL", "RL"], "nu_cards": 8, "active_player": 3, "seed": 67, "colors": ['E', 'G', 'H', 'S'], "value_conversion": {1: "7", 2: "8", 3: "9", 4: "U", 5: "O", 6: "K", 7: "10", 8: "A"}})
+        env.reset()
+
+        env.my_game.printHands()
+        print("")
+
+        env.my_game.printCurrentState()
+
+        print("Start playing use env")
+        print("Model state  dimension:", env.observation_space.n, "\nModel action dimension:", env.action_space.n)
+        env.printON = True
+
+        for card_idx in [32, 32, 32, 32]:
+             state, rewards, done, info = env.step(card_idx)
+             print("\n", state, rewards, done, info)
 
 if __name__ == '__main__':
     unittest.main()

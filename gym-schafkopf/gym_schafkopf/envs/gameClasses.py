@@ -228,33 +228,35 @@ class game(metaclass=abc.ABCMeta):
     def splitState(self):
         state = self.getState().flatten().astype(np.int)
         ll    = self.nu_players * self.nu_cards
-        on_table, on_hand, played, play_options, add_states = state[0:ll], state[ll:2*ll], state[ll*2:3*ll], state[3*ll:4*ll], state[4*ll:len(state)]
-        return on_table, on_hand, played, play_options, add_states
+        on_table, on_hand, played, play_options, add_states, matching, decl_opts = state[0:ll], state[ll:2*ll], state[ll*2:3*ll], state[3*ll:4*ll], state[4*ll:4*ll+18], state[4*ll+18:len(state)-(len(self.declarations))], state[len(state)-(len(self.declarations)):len(state)]
+        return on_table, on_hand, played, play_options, add_states, matching, decl_opts
+
+    def getPartners(self, active_player, matchingBinary):
+        matchingBinary[active_player] = 10
+        result = ""
+        for i in matchingBinary:
+            if int(i)==1:
+                result+=self.player_names[i]
+        return result
 
     def printCurrentState(self):
         #Note: ontable, onhand played play_options laenge = players* cards
-        on_table, on_hand, played, play_options, add_states = self.splitState()
+        print("State for", self.player_names[self.active_player])
+        on_table, on_hand, played, play_options, add_states, matching, decl_opts = self.splitState()
         for i,j in zip([on_table, on_hand, played, play_options], ["on_table", "on_hand", "played", "options"]):
              #print(j, i, self.state2Cards(i))
              print("\t", j, self.state2Cards(i))
 
-        enemy_idx  = [*range(4)]
-        enemy_idx.remove(int(self.active_player))
-        would_win  = {}
-        color_free = {}
-        for m in range(self.nu_players-1):
-            for j in range(5):
-                if j==0 and add_states[m*5+j]==1:
-                    enemy_player = enemy_idx[m]
-                    would_win["current_winner"] = self.players[enemy_player].name
-                if j>0 and add_states[m*5+j]==1:
-                    enemy_player = enemy_idx[m]
-                    tmp = ""
-                    for u,z in enumerate(["B", "G", "R", "Y"]):
-                        if (j-1)==u:
-                            tmp = z
-                    color_free[self.players[enemy_player].name+"_"+tmp] = "free"
-        print("\t", "add_states:", would_win, color_free, add_states)
+        # print the matching
+        print("\t", "partners:", self.player_names[self.active_player]+"_"+str(self.active_player)+"(you) play with "+self.getPartners(self.active_player, matching))
+
+        enemy_tmp = [*range(4)]
+        enemy_tmp.remove(self.active_player)
+        splited_list = np.array_split(add_states,3)
+        for j,play_list in enumerate(splited_list):
+            print("\t","Add_state for ", self.player_names[enemy_tmp[j]])
+            print("\t \t"," would_win", play_list[0], "is free of trump", play_list[5], "color(EGHZ) free", play_list[1:5])
+        print("\t","Declaration options", decl_opts)
 
     def nextGamePlayer(self):
         if self.game_start_player < self.nu_players-1:
