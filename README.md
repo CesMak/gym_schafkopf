@@ -114,6 +114,6 @@ pyreverse -o png gameClasses.py schafkopf.py
 |2020.09.07| added test_color free test | added_color_test  |
 |2020.09.07| added printStatetest|   |
 |2020.09.08| included declarations in env environment| env_step1   |
+|2020.09.08| included playing phase in env environment| env_step2  |
 
-Next Step incooperate declaration phase!
-see getBinaryOptions has to be extended according to self.decl_options
+Next: test all other gameLogic Tests again such that these succeed.

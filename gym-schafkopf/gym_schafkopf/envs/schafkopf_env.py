@@ -45,14 +45,14 @@ class SchafkopfEnv(gym.Env):
         - info
         '''
         assert self.action_space.contains(action)
-        print("inside env step......", action)
-
         rewards, round_finished, done = self.my_game.play_ai_move(action, print_=self.printON)
-        print("after play_ai_move")
         rewardss, done = self.selectReward(rewards, round_finished, done, self.style)
         if done:
+            if self.printON:
+                print("\t Reward: ", rewardss, "Done:", done)
             state = self.reset()
         else:
+            # following calls evaluateWinner!
             state = self.my_game.getState().flatten().astype(np.int)
         return state, rewardss, done, {"round_finished": round_finished, "correct_moves":  self.correct_moves}
 

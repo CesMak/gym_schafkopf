@@ -315,9 +315,10 @@ class gameLogic(unittest.TestCase):
         print("Model state  dimension:", env.observation_space.n, "\nModel action dimension:", env.action_space.n)
         env.printON = True
 
-        for card_idx in [32, 32, 32, 32]:
+        for card_idx in [32, 32, 32, 32, 14, 15, 10, 0]:
              state, rewards, done, info = env.step(card_idx)
-             print("\n", state, rewards, done, info)
-
+        assert done == False
+        assert env.my_game.correct_moves == 8
+        
 if __name__ == '__main__':
     unittest.main()
