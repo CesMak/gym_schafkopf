@@ -304,10 +304,24 @@ class game(metaclass=abc.ABCMeta):
         return random.randrange(len(self.players[self.active_player].hand))
 
     def getRandomValidOption(self):
-        # return a card!
-        valid_options_as_cards = self.getValidOptions(self.on_table_cards, self.active_player)# cards
-        rand_idx               = random.randrange(len(valid_options_as_cards))
-        return valid_options_as_cards[rand_idx]
+        # return an index of a card or a declaration index
+        cp = self.active_player
+        if self.phase == "declaration":
+            # find random index in allowed_decl=[1.0, 1.0, 1.0, 1.0] that is 1.0
+            allowed_decl = self.getBinaryDeclarations(cp)
+            rand_idx     = random.randrange(0, int(sum(allowed_decl)))
+            tmp          = 0
+            for j, i in enumerate(allowed_decl):
+                if tmp == rand_idx:
+                    break
+                if int(i) == 1:
+                    tmp +=1
+            return j+self.nu_players*self.nu_cards
+        elif self.phase == "playing":
+            valid_options_as_cards = self.getValidOptions(self.on_table_cards, self.active_player)# cards
+            rand_idx               = random.randrange(len(valid_options_as_cards))
+            card                   = valid_options_as_cards[rand_idx]
+            return self.players[cp].hand.index(card)
 
     def getRandomOption_(self):
         incolor = None

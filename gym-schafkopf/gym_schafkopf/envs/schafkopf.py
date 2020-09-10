@@ -56,6 +56,8 @@ class schafkopf(game):
             self.assignDeclaration([self.players[i].hand], i, use_random=True)
 
     def getWinningDeclaration(self, actual, new_decl):
+        if "ruf" in actual and "ruf" in new_decl:
+            return False
         if self.decl_options.index(new_decl)>self.decl_options.index(actual):
             return True
         return False
@@ -348,13 +350,22 @@ class schafkopf(game):
         gameOver       = False
         round_finished = False
         while len(self.players[self.active_player].hand) > 0:
-            current_player = self.active_player
-            if "RANDOM" in self.player_types[current_player]:
-                card            = self.getRandomValidOption()
-                hand_idx_action = self.players[self.active_player].hand.index(card)
-                if print_:
-                    print("[{}] {} {}\t plays {}\tCard {}\tHand Index {}\t len {} ->colFree {} trumpFree {}".format(self.current_round, current_player, self.player_names[current_player], self.player_types[current_player], card, hand_idx_action, len(self.players[current_player].hand), self.players[current_player].colorFree, self.players[current_player].trumpFree))
-                rewards, round_finished, gameOver = self.step(hand_idx_action, print_)
+            cp = self.active_player
+            if "RANDOM" in self.player_types[cp]:
+                ai_action            = self.getRandomValidOption()
+                if self.phase=="declaration":
+                    if print_:  print(self.player_names[cp], self.player_types[cp], cp,"trys to declare....", ai_action)
+                    rewards, round_finished, gameOver = self.step(ai_action, print_)
+                    if print_:
+                        print("\t "+self.player_names[cp]+": "+self.declarations[cp])
+                        if self.DeclarationFinished():
+                            print("\t Highest Declaration: "+str(self.getHighestDeclaration(self.declarations)))
+                            print("\t Matching           : ", str(self.matching)[0:60],"\n")
+                elif self.phase == "playing":
+                    card              = self.idx2Card(ai_action)
+                    if print_: print(self.current_round, str(cp)+"-"+self.player_names[cp], self.player_types[cp],"plays", card)
+                    rewards, round_finished, gameOver = self.step(ai_action, print_)
+
                 if print_ and round_finished:
                     print("")
             else:

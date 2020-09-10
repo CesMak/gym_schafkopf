@@ -212,6 +212,10 @@ pyreverse -o png gameClasses.py schafkopf.py
 |2020.09.08| 8/8gameLogicTests run without error | env_step3  |
 |2020.09.10| added tut2 and included cp in state | included_cp_in_state  |
 |2020.09.10| added tut3 started with tut4 | added_tutorial3  |
+|2020.09.10| added test test_playUntilAI| test_playUntilAI  |
+
+Test more test_playUntilAI
+
 
 playUntilAI -> include step dass declaration phase auch macht!
 

@@ -321,6 +321,7 @@ class gameLogic(unittest.TestCase):
         assert done == False
         assert env.my_game.correct_moves == 8
 
+    @unittest.skip("demonstrating skipping")
     def test_printState(self):
         import gym
         import gym_schafkopf
@@ -334,6 +335,18 @@ class gameLogic(unittest.TestCase):
         print("")
 
         env.my_game.printCurrentState(state)
+
+    def test_playUntilAI(self):
+        import gym
+        import gym_schafkopf
+        env = gym.make("Schafkopf-v1")
+        state = env.resetRandomPlay_Env(print__=True)
+        # print("len-state:", len(state))
+        # env.test_game.printCurrentState(state)
+
+        #now Lea has to play:
+        env.stepRandomPlay_Env(32, True)
+
 
 if __name__ == '__main__':
     unittest.main()

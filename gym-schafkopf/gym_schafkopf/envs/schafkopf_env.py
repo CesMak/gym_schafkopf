@@ -12,7 +12,7 @@ class SchafkopfEnv(gym.Env):
         self.correct_moves = 0
 
         ### Create the test game (only one RL)
-        self.options_test   =  {"names": ["Max", "Lea", "Jo", "Tim"], "type": ["RANDOM", "RANDOM", "RANDOM", "RANDOM"], "nu_cards": 8, "active_player": 3, "seed": None, "colors": ['E', 'G', 'H', 'S'], "value_conversion": {1: "7", 2: "8", 3: "9", 4: "U", 5: "O", 6: "K", 7: "10", 8: "A"}}
+        self.options_test   =  {"names": ["Max", "Lea", "Jo", "Tim"], "type": ["RANDOM", "RL", "RANDOM", "RANDOM"], "nu_cards": 8, "active_player": 3, "seed": None, "colors": ['E', 'G', 'H', 'S'], "value_conversion": {1: "7", 2: "8", 3: "9", 4: "U", 5: "O", 6: "K", 7: "10", 8: "A"}}
         self.test_game      = schafkopf(self.options_test)
 
         states          = self.my_game.getState().flatten().astype(np.int).shape
