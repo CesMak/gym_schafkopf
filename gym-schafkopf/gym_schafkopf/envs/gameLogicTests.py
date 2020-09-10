@@ -298,6 +298,7 @@ class gameLogic(unittest.TestCase):
         # 	 Add_state for  Tim
         # 	 	  would_win 0 is free of trump 0 color(EGHZ) free [0 1 0 0]
 
+    @unittest.skip("demonstrating skipping")
     def test_gymEnvPlaying(self):
         # learning
         # only RL player train against each other!
@@ -319,6 +320,20 @@ class gameLogic(unittest.TestCase):
              state, rewards, done, info = env.step(card_idx)
         assert done == False
         assert env.my_game.correct_moves == 8
+
+    def test_printState(self):
+        import gym
+        import gym_schafkopf
+        env = gym.make("Schafkopf-v1", options={"names": ["Max", "Lea", "Jo", "Tim"], "type": ["RL", "RL", "RL", "RL"], "nu_cards": 8, "active_player": 3, "seed": 67, "colors": ['E', 'G', 'H', 'S'], "value_conversion": {1: "7", 2: "8", 3: "9", 4: "U", 5: "O", 6: "K", 7: "10", 8: "A"}})
+        state = env.reset()
+        print("len-state:", len(state))
+        print(state)
+
+
+        env.my_game.printHands()
+        print("")
+
+        env.my_game.printCurrentState(state)
 
 if __name__ == '__main__':
     unittest.main()

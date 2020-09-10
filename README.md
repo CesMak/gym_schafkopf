@@ -39,6 +39,7 @@ pip3 install -r requirements.txt # the requirements.txt file is in the Tutorials
 ```
 
 ## State Representation
+* state = np.asarray([on_table+ on_hand+ played+ play_options+ add_states+matching+decl_options+[self.active_player]])
 * Example for 8 Cards and 4 Players
 * Total Cards = 32
   * Each card has a color **E**ichel, **G**ruen, **H**erz, **S**chelle
@@ -62,7 +63,7 @@ pip3 install -r requirements.txt # the requirements.txt file is in the Tutorials
   * matching   = (4x1)
     * active player = 0  and matching = [1, 0, 1, 0]
     * this means active player is in the team with itself and player 2
-  * state(150x1)=card_state + add_states+matching
+  * state(150x1)=card_state + add_states+matching+decl_options
 
 ## Install gym environment
 ```bash
@@ -116,4 +117,8 @@ pyreverse -o png gameClasses.py schafkopf.py
 |2020.09.08| included declarations in env environment| env_step1   |
 |2020.09.08| included playing phase in env environment| env_step2  |
 |2020.09.08| 8/8gameLogicTests run without error | env_step3  |
-Next: test all other gameLogic Tests again such that these succeed.
+|2020.09.10| added tut2 and included cp in state | included_cp_in_state  |
+
+next: write the tutorials generate data and try to learn with it!
+
+next: how to integrate schafkopf in the webpage?

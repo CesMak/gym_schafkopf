@@ -33,6 +33,7 @@ class schafkopf(game):
         super().setup_game()
         self.active_player     = self.nextGamePlayer()
         self.correct_moves     = 0
+        self.declarations      = []
         for i in range (self.nu_players):
             self.declarations.append("")
 
@@ -480,7 +481,7 @@ class schafkopf(game):
 
         # append matching here!
         matching = self.getMatchingBinary(self.active_player)
-        return np.asarray([on_table+ on_hand+ played+ play_options+ add_states+matching+decl_options])
+        return np.asarray([on_table+ on_hand+ played+ play_options+ add_states+matching+decl_options+[self.active_player]])
 
     def getmyState(self, playeridx, players, cards):
         # should be 60 here in case of error!

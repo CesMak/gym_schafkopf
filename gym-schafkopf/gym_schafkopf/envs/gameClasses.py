@@ -225,11 +225,13 @@ class game(metaclass=abc.ABCMeta):
             result.append(self.idx2Card(j))
         return result
 
-    def splitState(self):
-        state = self.getState().flatten().astype(np.int)
+    def splitState(self, state=None):
+        if state is None:
+            state = self.getState().flatten().astype(np.int)
         ll    = self.nu_players * self.nu_cards
-        on_table, on_hand, played, play_options, add_states, matching, decl_opts = state[0:ll], state[ll:2*ll], state[ll*2:3*ll], state[3*ll:4*ll], state[4*ll:4*ll+18], state[4*ll+18:len(state)-(len(self.declarations))], state[len(state)-(len(self.declarations)):len(state)]
-        return on_table, on_hand, played, play_options, add_states, matching, decl_opts
+        on_table, on_hand, played, play_options= state[0:ll], state[ll:2*ll], state[ll*2:3*ll], state[3*ll:4*ll]
+        add_states, matching, decl_opts, cp = state[4*ll:4*ll+18], state[4*ll+18:len(state)-(1+len(self.declarations))], state[len(state)-(1+len(self.declarations)):len(state)-1], state[len(state)-1]
+        return on_table, on_hand, played, play_options, add_states, matching, decl_opts, cp
 
     def getPartners(self, active_player, matchingBinary):
         matchingBinary[active_player] = 10
@@ -239,19 +241,19 @@ class game(metaclass=abc.ABCMeta):
                 result+=self.player_names[i]
         return result
 
-    def printCurrentState(self):
+    def printCurrentState(self, state=None):
         #Note: ontable, onhand played play_options laenge = players* cards
-        print("State for", self.player_names[self.active_player])
-        on_table, on_hand, played, play_options, add_states, matching, decl_opts = self.splitState()
+        on_table, on_hand, played, play_options, add_states, matching, decl_opts, cp = self.splitState(state)
+        print("State for", self.player_names[cp])
         for i,j in zip([on_table, on_hand, played, play_options], ["on_table", "on_hand", "played", "options"]):
              #print(j, i, self.state2Cards(i))
              print("\t", j, self.state2Cards(i))
 
         # print the matching
-        print("\t", "partners:", self.player_names[self.active_player]+"_"+str(self.active_player)+"(you) play with "+self.getPartners(self.active_player, matching))
+        print("\t", "partners:", self.player_names[cp]+"_"+str(cp)+"(you) play with "+self.getPartners(cp, matching))
 
         enemy_tmp = [*range(4)]
-        enemy_tmp.remove(self.active_player)
+        enemy_tmp.remove(cp)
         splited_list = np.array_split(add_states,3)
         for j,play_list in enumerate(splited_list):
             print("\t","Add_state for ", self.player_names[enemy_tmp[j]])
