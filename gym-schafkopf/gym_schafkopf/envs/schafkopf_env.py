@@ -73,8 +73,14 @@ class SchafkopfEnv(gym.Env):
 
     def stepRandomPlay_Env(self, ai_action, print__=False):
         'used for test game'
-        print("hallo")
+        rewards, corr_moves, done = self.test_game.stepRandomPlay(ai_action, print_=print__)
+        return self.test_game.getState().flatten().astype(np.int), rewards, corr_moves, done
 
     def resetRandomPlay_Env(self, print__=False):
         'used for test game'
-        print("hallo")
+        self.test_game.reset()
+        #print Hand of RL player:
+        if print__:
+            for i in range(4): print("Hand of player: ", self.options_test["names"][i], self.test_game.players[i].hand)
+        self.test_game.playUntilAI(print_=print__)
+        return self.test_game.getState().flatten().astype(np.int)

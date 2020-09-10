@@ -581,8 +581,9 @@ class schafkopf(game):
                         if self.DeclarationFinished():
                             print("\t Highest Declaration: "+str(self.getHighestDeclaration(self.declarations)))
                             print("\t Matching           : ", str(self.matching)[0:60],"\n")
+                    return rewards, round_finished, gameOver
                 else:
-                    print("this declaration is not allowed! - ERROR", allowed_decl)
+                    if print_: print("this declaration is not allowed! - ERROR", allowed_decl)
                     return {"state": "play_or_shift", "ai_reward": None}, False, True
             elif self.phase == "playing" and ai_action<=31:
                 card_options__    = self.getValidOptions(self.on_table_cards, cp)
@@ -607,35 +608,17 @@ class schafkopf(game):
                             print("Caution option idx", tmp, "not in (idx)", card_options)
                         if not "RL" in self.player_types[current_player]:
                             print("Caution", self.player_types[current_player], self.active_player, "is not of type RL", self.player_types)
+                return {"state": "play_or_shift", "ai_reward": None}, False, True
             else:
                 if print_: print(self.player_names[cp], self.player_types[cp], " played wrong ai_action", ai_action, "for phase", self.phase)
                 return {"state": "play_or_shift", "ai_reward": None}, False, True
-
-            return rewards, round_finished, gameOver
         else:
             print("I am not an RL PlAYER..... ERROR")
             return {"state": "play_or_shift", "ai_reward": None}, False, True # rewards round_finished, game_over
 
 
-
-
-
-
-
-
-
-
-
-
-
-######
-####  currently not used functions:::
-####
-
-
-
-
     def stepRandomPlay(self, action_ai, print_=False):
+        # this method is used by schafkopf_env
         # fängt denn ai überhaupt an???
         # teste ob correct_moves korrekt hochgezählt werden?!
         rewards, round_finished, gameOver = self.play_ai_move(action_ai, print_=print_)
@@ -658,6 +641,18 @@ class schafkopf(game):
                     ai_reward = rewards["final_rewards"][1]
                 return [ai_reward, mean_random], self.correct_moves, gameOver
 
+
+
+
+
+
+
+
+
+
+######
+####  currently not used functions:::
+####
     def getRandomPossCards(self, list, nuCards):
         #random.seed(None)
         result = []

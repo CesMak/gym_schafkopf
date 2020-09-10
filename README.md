@@ -90,7 +90,100 @@ Simply run the unittests to test the gameLogic of Schafkopf:
 ```bash
 /01_Tutorials/01_GenerateGymData$ python test_gym.py
 ```
+### 02_GenerateBatches
 
+Generate Data which is used later on to train a policy.
+```bash
+/01_Tutorials/02_GenerateBatches$ python gen_batches.py
+```
+
+```
+Creating model: Schafkopf-v1
+Model state  dimension: 155
+Model action dimension: 36
+Number of steps in one game: 9
+
+Max RL  played wrong ai_action 23 for phase declaration
+	 Reward:  -100 Done: True
+Lea RL  played wrong ai_action 11 for phase declaration
+	 Reward:  -100 Done: True
+Jo RL  played wrong ai_action 4 for phase declaration
+	 Reward:  -100 Done: True
+
+One Batch:
+Actions: [23]
+State  : [array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0,
+       0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0,
+       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0,
+       0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1,
+       0])]
+Rewards: [-100]
+LogProb: [0.2]
+Done   : [True]
+State: 155
+State for Max
+	 on_table []
+	 on_hand [7 of E_0, U of E_3, K of E_5, A of E_7, 7 of H_16, K of H_21, A of H_23, 9 of S_26]
+	 played []
+	 options []
+	 partners: Max_0(you) play with
+	 Add_state for  Lea
+	 	  would_win 1 is free of trump 0 color(EGHZ) free [0 0 0 0]
+	 Add_state for  Jo
+	 	  would_win 1 is free of trump 0 color(EGHZ) free [0 0 0 0]
+	 Add_state for  Tim
+	 	  would_win 1 is free of trump 0 color(EGHZ) free [0 0 0 0]
+	 Declaration options [1 0 0 1]
+None
+
+Benchmark playing 100000 steps
+Took: 0:01:08.550217 Number of batches:  99982
+```
+
+### 03_Parallel_Batch_Generation
+* uses ray for parallel batch generation
+* pip install ray==0.8.1
+* is 2.5xfaster
+```bash
+/01_Tutorials/03_Parallel_Batch_Generation$ python gen_batches_parallel.py.py
+```
+
+```
+Creating model: Schafkopf-v1
+Model state  dimension: 155
+Model action dimension: 36
+
+Benchmark playing 10000 games
+Took: 0:00:29.501962 Number of batches:  99925
+```
+
+### 04_Policy_PPO
+* include training a neuronal network
+* included classes ActorModel, ActorCritic, PPO
+```bash
+pip install torch
+pip install onnx
+pip install onnxruntime
+```
+
+* As you can see in the output below the batch size is slowly increasing
+* The learning rate (lr) remains constant
+* The network learns slowly correct actions (playing correct cards)
+
+```bash
+/01_Tutorials/03_Parallel_Batch_Generation$ python gen_batches_parallel.py.py
+```
+
+TODO teste ob checkt mit wem zusammenspielt....
+
+Output:
+```
+...
+
+```
 
 ## Further Notes
 ```bash
@@ -118,7 +211,8 @@ pyreverse -o png gameClasses.py schafkopf.py
 |2020.09.08| included playing phase in env environment| env_step2  |
 |2020.09.08| 8/8gameLogicTests run without error | env_step3  |
 |2020.09.10| added tut2 and included cp in state | included_cp_in_state  |
+|2020.09.10| added tut3 started with tut4 | added_tutorial3  |
 
-next: write the tutorials generate data and try to learn with it!
+playUntilAI -> include step dass declaration phase auch macht!
 
 next: how to integrate schafkopf in the webpage?
