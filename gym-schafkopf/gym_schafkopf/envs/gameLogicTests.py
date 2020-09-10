@@ -85,7 +85,7 @@ class gameLogic(unittest.TestCase):
 
         print("\n\n Test playing random")
         rewards, round_finished, gameOver =  test_game.playUntilAI(print_=True)
-        assert rewards["final_rewards"][0] == -25
+        assert rewards["final_rewards"][0] == 20
 
     @unittest.skip("demonstrating skipping")
     def test_trumpFree(self):
@@ -153,7 +153,7 @@ class gameLogic(unittest.TestCase):
         # da er die Ruf Ass hat.
         cards = test_game.getValidOptions(test_game.on_table_cards, test_game.active_player)
         print(cards)
-        assert len(cards) == 6
+        assert len(cards) == 7
 
     @unittest.skip("demonstrating skipping")
     def test_winner(self):
@@ -231,19 +231,19 @@ class gameLogic(unittest.TestCase):
         print(cards_ordered,"\n")
 
         # Test Valid Options:
-        play_options = env.my_game.getBinaryOptions(env.my_game.active_player, env.my_game.nu_players, env.my_game.nu_cards)
-        cards        = env.my_game.state2Cards(play_options)
-        assert (len(cards) == 8)
-        print("")
-        print("Options Max:", cards)
-        print("Vector list:", play_options)
-
         print("\nDeclarations")
         env.my_game.randomInitDeclarations()
         print(env.my_game.declarations)
         print(env.my_game.getHighestDeclaration(env.my_game.declarations))
         env.my_game.setDeclaration(env.my_game.declarations)
         print(env.my_game.matching)
+
+        play_options = env.my_game.getBinaryOptions(env.my_game.active_player, env.my_game.nu_players, env.my_game.nu_cards)
+        cards        = env.my_game.state2Cards(play_options)
+        assert (len(cards) == 8)
+        print("")
+        print("Options Max:", cards)
+        print("Vector list:", play_options)
 
         print("\nPlay some cards")
         for i in [2,3,2,6, 1,0,0,0, 2,2,1,0, 4,3,2,0, 0,0,0,0, 0,0]:
@@ -319,6 +319,6 @@ class gameLogic(unittest.TestCase):
              state, rewards, done, info = env.step(card_idx)
         assert done == False
         assert env.my_game.correct_moves == 8
-        
+
 if __name__ == '__main__':
     unittest.main()

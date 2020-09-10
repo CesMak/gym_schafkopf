@@ -115,5 +115,5 @@ pyreverse -o png gameClasses.py schafkopf.py
 |2020.09.07| added printStatetest|   |
 |2020.09.08| included declarations in env environment| env_step1   |
 |2020.09.08| included playing phase in env environment| env_step2  |
-
+|2020.09.08| 8/8gameLogicTests run without error | env_step3  |
 Next: test all other gameLogic Tests again such that these succeed.

@@ -135,7 +135,24 @@ class schafkopf(game):
         self.setTrickOrder(trump=self.matching["trump"])
 
         if "ruf" in self.matching["type"]:
-            self.matching["nuLaufende"]  = self.getNuLaufende(self.players[self.matching["spieler"]].hand+self.players[self.matching["partner"]].hand)
+            tmp                   = [self.matching["spieler"], self.matching["partner"]]
+            players_ruf           = [self.players[i].hand for i in tmp]
+            players_ruf           = [item for sublist in players_ruf for item in sublist]
+
+            enemys                = list(range(4))
+            enemys                = [i for j, i in enumerate(enemys) if j not in tmp]
+            enemys                = [self.players[i].hand for i in enemys]
+            enemys                = [item for sublist in enemys for item in sublist]
+
+            ruf_laufende   = self.getNuLaufende(players_ruf)
+            enemy_laufende = self.getNuLaufende(enemys)
+            if ruf_laufende>enemy_laufende:
+                self.matching["nuLaufende"] = ruf_laufende
+            else:
+                self.matching["nuLaufende"] = enemy_laufende
+
+        if self.DeclarationFinished():
+            self.phase = "playing"
 
     def getNuLaufende(self, cards):
         counter        = 0
@@ -146,6 +163,7 @@ class schafkopf(game):
                     counter +=1
             if counter_before == counter:
                 return counter
+        return counter
 
     def getPlayerIdxOfSpecificCard(self, value, color):
         for n, play in enumerate(self.players):
