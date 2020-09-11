@@ -174,10 +174,8 @@ pip install onnxruntime
 * The network learns slowly correct actions (playing correct cards)
 
 ```bash
-/01_Tutorials/03_Parallel_Batch_Generation$ python gen_batches_parallel.py.py
+/01_Tutorials/04_Policy_PPO$ python ppo_policy.py.py
 ```
-
-TODO teste ob checkt mit wem zusammenspielt....
 
 Output:
 ```
@@ -270,6 +268,25 @@ Game ,2158000, mean_rew of 4542 finished g. ,2.6856, of random ,2.0668, corr_mov
 Game ,2231100, mean_rew of 4576 finished g. ,3.1993, of random ,2.2232, corr_moves[max: 9] ,8.576, mean_rew ,-5.55,   3:00:19.230973,playing t=100.97, lr=0.01, batch=72772
 ```
 
+
+### 05_ImprovePretrained
+* use pretrained network and improve it!
+* params further_1:
+  ```
+  eps = 0.05               #train further1: 0.05   train further2: 0.01 train further3:  0.001
+  lr  = 0.001              #train further1: 0.001  train further2: 0.0009, train further3 0.0001
+  update_timestep = 5000  # train further1: 80000  train further2: 180000  train further2: 300000
+  eps_decay   = 8000000 # is currently not used!
+  ```
+
+```bash
+/01_Tutorials/05_ImprovePretrained$ python policy_ppo.py
+```
+
+Output:
+```
+```
+
 ## Further Notes
 ```bash
 pip freeze > requirements.txt
@@ -299,7 +316,11 @@ pyreverse -o png gameClasses.py schafkopf.py
 |2020.09.10| added tut3 started with tut4 | added_tutorial3  |
 |2020.09.10| added test test_playUntilAI| test_playUntilAI  |
 |2020.09.11| added test test_playUntilAI| test_playUntilAI_2  |
+|2020.09.11| added tut4| added_tut4_learn1  |
+|2020.09.11| added tut5| added_tut5_learnfurther |
 
+Correct logic errors.....
+TODO teste ob checkt mit wem zusammenspielt....
 next: how to integrate schafkopf in the webpage?
 
 Siehe:

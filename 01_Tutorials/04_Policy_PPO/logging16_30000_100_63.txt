@@ -1,6 +1,0 @@
-Game ,0030000, mean_rew of 0 finished g. ,0.0, of random ,0.0, corr_moves[max: 9] ,0.276, mean_rew ,-1e+02,   0:01:05.334006,playing t=44.8, lr=0.01, batch=29930
-Game ,0090300, mean_rew of 0 finished g. ,0.0, of random ,0.0, corr_moves[max: 9] ,0.821, mean_rew ,-1e+02,   0:03:10.089280,playing t=45.91, lr=0.01, batch=60167
-Game ,0151000, mean_rew of 0 finished g. ,0.0, of random ,0.0, corr_moves[max: 9] ,1.209, mean_rew ,-1e+02,   0:05:39.202950,playing t=52.66, lr=0.01, batch=60594
-Game ,0212100, mean_rew of 0 finished g. ,0.0, of random ,0.0, corr_moves[max: 9] ,1.573, mean_rew ,-1e+02,   0:08:17.187141,playing t=51.04, lr=0.01, batch=61012
-Game ,0273600, mean_rew of 4 finished g. ,1.25, of random ,-0.41667, corr_moves[max: 9] ,2.566, mean_rew ,-99.9,   0:11:53.442328,playing t=62.33, lr=0.01, batch=61405
-Game ,0335500, mean_rew of 17 finished g. ,8.8235, of random ,-1.5686, corr_moves[max: 9] ,3.807, mean_rew ,-99.6,   0:16:51.176912,playing t=92.05, lr=0.01, batch=61773
