@@ -336,6 +336,7 @@ class gameLogic(unittest.TestCase):
 
         env.my_game.printCurrentState(state)
 
+    @unittest.skip("demonstrating skipping")
     def test_playUntilAI(self):
         import gym
         import gym_schafkopf
@@ -355,6 +356,29 @@ class gameLogic(unittest.TestCase):
 
         # assert total rewards after second game:
         assert (env.test_game.total_rewards[1] == 10)
+
+    def test_ramsch(self):
+        import gym
+        import gym_schafkopf
+        env = gym.make("Schafkopf-v1", seed=96)
+        state = env.resetRandomPlay_Env(print__=True)
+        # print("len-state:", len(state))
+        # env.test_game.printCurrentState(state)
+
+        #now Lea has to play:
+        for i in [32, 22, 8, 24, 13, 0, 5, 1, 2]:
+            env.stepRandomPlay_Env(i, True)
+        assert env.test_game.rewards[2] == -30
+
+        for i in range(4):
+            print(env.test_game.player_names[i], env.test_game.rewards[i])
+            print(env.test_game.players[i].offhand)
+
+        # play next game:
+        state = env.resetRandomPlay_Env(print__=True)
+        assert env.test_game.active_player == 1
+        for i in [32, 22]:
+            env.stepRandomPlay_Env(i, True)
 
 if __name__ == '__main__':
     unittest.main()

@@ -318,6 +318,8 @@ pyreverse -o png gameClasses.py schafkopf.py
 |2020.09.11| added test test_playUntilAI| test_playUntilAI_2  |
 |2020.09.11| added tut4| added_tut4_learn1  |
 |2020.09.11| added tut5| added_tut5_learnfurther |
+|2020.09.11| added test_ramsch| test_ramsch |
+
 
 Correct logic errors.....
 TODO teste ob checkt mit wem zusammenspielt....

@@ -479,6 +479,36 @@ class schafkopf(game):
                 print("poitns", ruf_points, "--> money: ", money)
                 print("Rewards:", self.rewards)
 
+        if "ramsch" in self.matching["type"]:
+            if print_:
+                print("")
+                print(self.matching["type"]+": ")
+                print("\tfinal points:", self.rewards)
+            max_reward  = max(self.rewards)
+            looser_idx  = list(self.rewards).index(max_reward)
+            new_results = [0]*4
+            if self.rewards[looser_idx] <90:
+                for i in range(len(new_results)):
+                    if i != looser_idx:
+                        if self.rewards[i] == 0:
+                            new_results[i] = 15
+                        elif self.rewards[i]>0 and self.rewards[i]<30:
+                            new_results[i] = 10
+                        elif self.rewards[i]>30:
+                            new_results[i] = 5
+                new_results[looser_idx] = -sum(new_results)
+                self.rewards = new_results
+            else:
+                # all other loose 15!
+                self.rewards[looser_idx] = 45
+                for i in range(len(self.rewards)):
+                    if i != looser_idx:
+                        self.rewards[i] = -15
+            if print_:
+                print("\tLooser:", self.player_names[looser_idx], "has", max_reward)
+                print("\tRewards:", self.rewards)
+
+
     def getState(self):
         play_options = self.getBinaryOptions(self.active_player, self.nu_players, self.nu_cards)
         decl_options = self.getBinaryDeclarations(self.active_player)
@@ -641,6 +671,8 @@ class schafkopf(game):
         elif gameOver and "final_rewards" in rewards:
             # case that ai plays last card:
             mean_random = (sum(rewards["final_rewards"])- rewards["final_rewards"][1])/3
+            if print_:
+                print(rewards, self.correct_moves)
             return [rewards["final_rewards"][1], mean_random], self.correct_moves, gameOver
         else:
             #case that random player plays last card:
@@ -653,6 +685,8 @@ class schafkopf(game):
                 if gameOver and "final_rewards" in rewards:
                     mean_random = (sum(rewards["final_rewards"])- rewards["final_rewards"][1])/3
                     ai_reward = rewards["final_rewards"][1]
+                    if print_:
+                        print(rewards, self.correct_moves)
                 return [ai_reward, mean_random], self.correct_moves, gameOver
 
 
