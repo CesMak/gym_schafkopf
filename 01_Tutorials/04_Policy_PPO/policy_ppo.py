@@ -301,7 +301,7 @@ def playRandomSteps(policy, env, steps, max_corr):
         total_ai_reward  +=rewards[0]
     return finished_ai_reward, finished_games, total_ai_reward, total_correct, finished_random
 
-def test_with_random(policy, env, jjj, max_corr, episodes=5000, print_game=50):
+def test_with_random(policy, env, jjj, max_corr, episodes=5000, print_game=5):
     finished_ai_reward, finished_games, total_ai_reward, total_correct, finished_random = 0.0, 0.0, 0.0, 0.0, 0.0
     nu_remote            = 10
     steps                = int(episodes/nu_remote)
@@ -398,6 +398,7 @@ def learn_single(ppo, update_timestep, eps_decay, env, increase_batch, log_path,
 if __name__ == '__main__':
     ## Setup Env:
     env_name      = "Schafkopf-v1"
+    start_time = datetime.datetime.now()
 
     # creating environment
     print("Creating model:", env_name)
@@ -412,7 +413,7 @@ if __name__ == '__main__':
     nu_latent       = 128
     gamma           = 0.99
     K               = 16     #5
-    update_timestep = 100  # train further1: 80000  train further2: 180000  train further2: 300000
+    update_timestep = 30000  # train further1: 80000  train further2: 180000  train further2: 300000
     increase_batch  = 100    # value is multipled with 10=nu_remote!! increase batch size every update step! (instead of lowering lr)
     eps             = 0.2    # should be decreased to 0 during training
     lr              = 0.01

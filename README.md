@@ -181,8 +181,93 @@ TODO teste ob checkt mit wem zusammenspielt....
 
 Output:
 ```
+Creating model: Schafkopf-v1
+Model state  dimension: 155
+Model action dimension: 36
+Parameters for training:
+ Latent Layers: 128
+ Learing Rate: 0.01  betas  (0.9, 0.999)
+ Gamma:  0.99
+ Epochs to train:  16
+ Epsillon 0.2  decay:  266
+ Batch size: 3000 Increase Rate: 10 0
+
+
+Game ,0030000, mean_rew of 0 finished g. ,0.0, of random ,0.0, corr_moves[max: 9] ,0.3096, mean_rew ,-1e+02,   0:01:02.645053,playing t=42.32, lr=0.01, batch=29930
+Game ,0090300, mean_rew of 0 finished g. ,0.0, of random ,0.0, corr_moves[max: 9] ,1.123, mean_rew ,-1e+02,   0:03:16.859169,playing t=47.68, lr=0.01, batch=60187
+Game ,0151000, mean_rew of 0 finished g. ,0.0, of random ,0.0, corr_moves[max: 9] ,1.341, mean_rew ,-1e+02,   0:05:45.887274,playing t=47.8, lr=0.01, batch=60604
+Game ,0212100, mean_rew of 0 finished g. ,0.0, of random ,0.0, corr_moves[max: 9] ,1.874, mean_rew ,-1e+02,   0:08:31.161221,playing t=51.53, lr=0.01, batch=61014
 ...
 
+Hand of player:  Max [O of E_4, K of E_5, 9 of G_10, O of G_12, O of H_20, A of H_23, U of S_27, K of S_29]
+Hand of player:  Lea [7 of E_0, 10 of E_6, U of G_11, 9 of H_18, U of H_19, 10 of H_22, 7 of S_24, A of S_31]
+Hand of player:  Jo [U of E_3, A of G_15, 7 of H_16, 8 of H_17, K of H_21, 8 of S_25, O of S_28, 10 of S_30]
+Hand of player:  Tim [8 of E_1, 9 of E_2, A of E_7, 7 of G_8, 8 of G_9, K of G_13, 10 of G_14, 9 of S_26]
+Lea RL trys to declare.... 32  allowed is [1.0, 1.0, 0.0, 0.0]
+	 Lea: weg
+Jo RANDOM 2 trys to declare.... 32
+	 Jo: weg
+Tim RANDOM 3 trys to declare.... 32
+	 Tim: weg
+Max RANDOM 0 trys to declare.... 32
+	 Max: weg
+	 Highest Declaration: ('weg', 0)
+	 Matching           :  {'type': 'ramsch', 'partner': 2, 'spieler': 0, 'trump': 'H',
+
+
+0 1-Lea	RL	plays U of H_19
+0 2-Jo	RANDOM	plays 7 of H_16
+0 3-Tim	RANDOM	plays A of E_7
+0 0-Max	RANDOM	plays O of E_4
+	 Winner:Max with O of E_4 sits on 3 at the table
+
+1 0-Max	RANDOM	plays O of G_12
+1 1-Lea	RL	plays 9 of H_18
+1 2-Jo	RANDOM	plays U of E_3
+1 3-Tim	RANDOM	plays 7 of G_8
+	 Winner:Max with O of G_12 sits on 0 at the table
+
+2 0-Max	RANDOM	plays O of H_20
+2 1-Lea	RL	plays 10 of H_22
+2 2-Jo	RANDOM	plays K of H_21
+2 3-Tim	RANDOM	plays 8 of E_1
+	 Winner:Max with O of H_20 sits on 0 at the table
+
+3 0-Max	RANDOM	plays K of S_29
+3 1-Lea	RL	plays A of S_31
+3 2-Jo	RANDOM	plays 10 of S_30
+3 3-Tim	RANDOM	plays 9 of S_26
+	 Winner:Lea with A of S_31 sits on 1 at the table
+
+4 1-Lea	RL	plays 10 of E_6
+4 2-Jo	RANDOM	plays 8 of H_17
+4 3-Tim	RANDOM	plays 9 of E_2
+4 0-Max	RANDOM	plays K of E_5
+	 Winner:Jo with 8 of H_17 sits on 1 at the table
+
+5 2-Jo	RANDOM	plays O of S_28
+5 3-Tim	RANDOM	plays 8 of G_9
+5 0-Max	RANDOM	plays A of H_23
+5 1-Lea	RL	plays U of G_11
+	 Winner:Jo with O of S_28 sits on 0 at the table
+6 2-Jo	RANDOM	plays A of G_15
+6 3-Tim	RANDOM	plays K of G_13
+6 0-Max	RANDOM	plays 9 of G_10
+6 1-Lea	RL	plays 7 of S_24
+	 Winner:Jo with A of G_15 sits on 0 at the table
+7 2-Jo	RANDOM	plays 8 of S_25
+7 3-Tim	RANDOM	plays 10 of G_14
+7 0-Max	RANDOM	plays U of S_27
+7 1-Lea	RL	plays 7 of E_0
+	 Winner:Max with U of S_27 sits on 2 at the table
+{'state': 'playing', 'ai_reward': 12, 'on_table_win_idx': 2, 'trick_rewards': [12, 0, 0, 0], 'player_win_idx': 0, 'final_rewards': array([50., 25., 45.,  0.])} 9 True
+
+Final ai reward: [25.0, 31.666666666666668] moves 9 done True
+Game ,1941100, mean_rew of 4594 finished g. ,3.2889, of random ,2.0716, corr_moves[max: 9] ,8.605, mean_rew ,-5.1,   2:35:56.407277,playing t=96.07, lr=0.01, batch=71219
+Game ,2013000, mean_rew of 4366 finished g. ,3.4246, of random ,1.9139, corr_moves[max: 9] ,8.458, mean_rew ,-9.69,   2:41:58.271590,playing t=98.85, lr=0.01, batch=71460
+Game ,2085300, mean_rew of 4488 finished g. ,2.5938, of random ,2.1137, corr_moves[max: 9] ,8.523, mean_rew ,-7.91,   2:48:04.383976,playing t=100.17, lr=0.01, batch=71909
+Game ,2158000, mean_rew of 4542 finished g. ,2.6856, of random ,2.0668, corr_moves[max: 9] ,8.569, mean_rew ,-6.72,   2:54:10.895498,playing t=99.86, lr=0.01, batch=72329
+Game ,2231100, mean_rew of 4576 finished g. ,3.1993, of random ,2.2232, corr_moves[max: 9] ,8.576, mean_rew ,-5.55,   3:00:19.230973,playing t=100.97, lr=0.01, batch=72772
 ```
 
 ## Further Notes
@@ -213,10 +298,10 @@ pyreverse -o png gameClasses.py schafkopf.py
 |2020.09.10| added tut2 and included cp in state | included_cp_in_state  |
 |2020.09.10| added tut3 started with tut4 | added_tutorial3  |
 |2020.09.10| added test test_playUntilAI| test_playUntilAI  |
-
-Test more test_playUntilAI
-
-
-playUntilAI -> include step dass declaration phase auch macht!
+|2020.09.11| added test test_playUntilAI| test_playUntilAI_2  |
 
 next: how to integrate schafkopf in the webpage?
+
+Siehe:
+https://www.mikoweb.eu/?p=1474
+https://www.mikoweb.eu:8080/skr/zumspiel.html
