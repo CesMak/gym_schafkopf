@@ -418,7 +418,7 @@ if __name__ == '__main__':
 
     if train_from_start:
         print("train from start")
-        eps = 0.2 # eps=0.2
+        eps = 0.1 # eps=0.2
         lr  = 0.01
         update_timestep = 30000
         eps_decay       = int(8000000/update_timestep) # is not used!
