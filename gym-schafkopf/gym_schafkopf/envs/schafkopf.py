@@ -33,6 +33,7 @@ class schafkopf(game):
         super().setup_game()
         self.active_player     = self.nextGamePlayer()
         self.correct_moves     = 0
+        self.phase          = "declaration"
         self.declarations      = []
         for i in range (self.nu_players):
             self.declarations.append("")
@@ -104,31 +105,32 @@ class schafkopf(game):
         #print(super().idxList2Cards(list(reversed(trick_order))))
         self.matching["order"] = list(reversed(trick_order))
 
-    def setDeclaration(self, prev_declarations, solo_decl="", ruf_decl="", use_random=True):
+    def setDeclaration(self, prev_declarations):
         # set matching
         # type = ramsch, solo_farbe, ruf_farbe, wenz, geier
         # spieler = player index
         # partner of the caller
         #input prev_declarations from phase 1 see getPossDeclarations
 
-        if use_random and "solo" in self.decl_options:
-            solo_decl = self.solo_options[random.randrange(len(self.solo_options))]
+        # if use_random and "solo" in self.decl_options:
+        #     solo_decl = self.solo_options[random.randrange(len(self.solo_options))]
 
         highest, idx = self.getHighestDeclaration(prev_declarations)
+        #
+        # if use_random and "ruf" in self.decl_options:
+        #     ruf_decl  = self.getRufDeclarations([self.players[idx].hand])
+        #     ruf_decl  = ruf_decl[random.randrange(len(ruf_decl))]
 
-        if use_random and "ruf" in self.decl_options:
-            ruf_decl  = self.getRufDeclarations([self.players[idx].hand])
-            ruf_decl  = ruf_decl[random.randrange(len(ruf_decl))]
-
-        if highest=="solo":
-            self.matching["type"]    = solo_decl
+        if "solo" in highest:
+            self.matching["type"]    = highest
             #TODO:
             self.matching["trump"]   = "H"
         elif highest=="weg":
             self.matching["type"]    = "ramsch"
-        elif highest=="ruf":
-            self.matching["type"]    = ruf_decl
-            self.matching["partner"] = self.getPlayerIdxOfSpecificCard("A", ruf_decl.split("_")[1])
+        elif "ruf" in highest:
+            self.matching["type"]    = highest
+            self.matching["partner"] = self.getPlayerIdxOfSpecificCard("A", highest.split("_")[1])
+
         else: # hochzeit, bettel
             self.matching["type"]    = highest
 
@@ -326,7 +328,6 @@ class schafkopf(game):
         #on_table_win_idx: player in sequence that one!
         highest_value    = 0
         winning_card     = self.on_table_cards[0]
-
         if "ruf" in self.matching["type"] or "hochzeit" in self.matching["type"] or "ramsch" in self.matching["type"]:
             # do a reordering according to incolor! (otherwise eichel beats green etc.)
             incolor = self.getInColor(self.on_table_cards)
@@ -341,7 +342,6 @@ class schafkopf(game):
             player_win_idx = self.player_names.index(winning_card.player)
         else: # solo
             print("TODO")
-        #print("inside evaluate_winner", winning_card, on_table_win_idx, player_win_idx)
         return winning_card, on_table_win_idx, player_win_idx
 
 
@@ -363,8 +363,8 @@ class schafkopf(game):
                             print("\t Matching           : ", str(self.matching)[0:60],"\n")
                 elif self.phase == "playing":
                     card              = self.idx2Card(ai_action)
-                    if print_: print(self.current_round, str(cp)+"-"+self.player_names[cp], self.player_types[cp],"plays", card)
-                    rewards, round_finished, gameOver = self.step(ai_action, print_)
+                    if print_: print(self.current_round, str(cp)+"-"+self.player_names[cp]+"\t"+self.player_types[cp]+"\tplays", card)
+                    rewards, round_finished, gameOver = self.step(self.idx2Hand(ai_action, cp), print_)
 
                 if print_ and round_finished:
                     print("")
@@ -373,9 +373,9 @@ class schafkopf(game):
         return rewards, True, True
 
     def step(self, action_idx, print_=False):
-        #Note that card_idx is a Hand Card IDX!
+        #Note that card_idx is a Hand Card IDX or a declaration index = 32,....
         # it is not card.idx unique number!
-        # Not that in this function action is not checked if correct / possible (this is done in play_ai_move)
+        # Not that in this function action is not checked if correct / possible (this is done in play_ai_move )
         round_finished = False
         if self.phase == "declaration" and action_idx>31:
             self.assignDeclaration([], self.active_player, decl=self.decl_options[action_idx-32])
@@ -394,6 +394,7 @@ class schafkopf(game):
             player_win_idx   = -1
             if len(self.on_table_cards) == self.nu_players:
                 winning_card, on_table_win_idx, player_win_idx = self.evaluateWinner()
+                if print_: print("\t Winner:"+self.player_names[player_win_idx]+" with "+str(winning_card)+" sits on "+str(on_table_win_idx)+" at the table"  )
                 trick_rewards[player_win_idx] = self.countResult([self.on_table_cards])
                 self.current_round +=1
                 self.played_cards.extend(self.on_table_cards)
@@ -417,6 +418,7 @@ class schafkopf(game):
         else:
             print("ERROR", self.phase, action_idx)
             return None
+
     def countResult(self, input_cards):
         #input_cards = [[card1, card2, card3, card4], [stich2], ...]
         # in class player
@@ -605,10 +607,11 @@ class schafkopf(game):
 
                 if player_has_card and tmp in card_options:
                     if print_:
-                        print(self.current_round, str(cp)+"-"+self.player_names[cp], self.player_types[cp],"plays", card)
+                        print(self.current_round, str(cp)+"-"+self.player_names[cp]+"\t"+self.player_types[cp]+"\tplays", card)
                     self.correct_moves +=1
                     rewards, round_finished, gameOver = self.step(self.idx2Hand(tmp, cp), print_)
-                    if print_ and round_finished:
+                    if print_ and round_finished and gameOver:
+                        #print("")
                         print(rewards, self.correct_moves, gameOver, "\n")
                     return rewards, round_finished, gameOver
                 else:
@@ -617,8 +620,8 @@ class schafkopf(game):
                             print("Caution player does not have card:", card, " choose one of:", self.idxList2Cards(card_options))
                         if not tmp in card_options:
                             print("Caution option idx", tmp, "not in (idx)", card_options)
-                        if not "RL" in self.player_types[current_player]:
-                            print("Caution", self.player_types[current_player], self.active_player, "is not of type RL", self.player_types)
+                        if not "RL" in self.player_types[cp]:
+                            print("Caution", self.player_types[cp], self.active_player, "is not of type RL", self.player_types)
                 return {"state": "play_or_shift", "ai_reward": None}, False, True
             else:
                 if print_: print(self.player_names[cp], self.player_types[cp], " played wrong ai_action", ai_action, "for phase", self.phase)

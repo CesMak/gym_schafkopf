@@ -321,7 +321,7 @@ class game(metaclass=abc.ABCMeta):
             valid_options_as_cards = self.getValidOptions(self.on_table_cards, self.active_player)# cards
             rand_idx               = random.randrange(len(valid_options_as_cards))
             card                   = valid_options_as_cards[rand_idx]
-            return self.players[cp].hand.index(card)
+            return card.idx
 
     def getRandomOption_(self):
         incolor = None

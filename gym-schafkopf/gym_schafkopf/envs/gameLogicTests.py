@@ -339,14 +339,22 @@ class gameLogic(unittest.TestCase):
     def test_playUntilAI(self):
         import gym
         import gym_schafkopf
-        env = gym.make("Schafkopf-v1")
+        env = gym.make("Schafkopf-v1", seed=55)
         state = env.resetRandomPlay_Env(print__=True)
         # print("len-state:", len(state))
         # env.test_game.printCurrentState(state)
 
         #now Lea has to play:
-        env.stepRandomPlay_Env(32, True)
+        for i in [32, 17, 11, 12, 15, 31, 18, 26, 25]:
+            env.stepRandomPlay_Env(i, True)
 
+        # play next game?!
+        state = env.resetRandomPlay_Env(print__=True)
+        for i in [32, 31, 11, 12, 15, 18, 26, 25, 17]:
+            env.stepRandomPlay_Env(i, True)
+
+        # assert total rewards after second game:
+        assert (env.test_game.total_rewards[1] == 10)
 
 if __name__ == '__main__':
     unittest.main()
