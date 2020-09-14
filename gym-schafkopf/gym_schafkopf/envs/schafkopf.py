@@ -410,8 +410,12 @@ class schafkopf(game):
 
             if self.isGameFinished():
                 self.getPoints(print_)
-                for i in range(len(self.total_rewards)):
-                    self.total_rewards[i] +=self.rewards[i]
+                # following might throw assignment destination is read-only (when using python3)
+                try:
+                    for i in range(len(self.total_rewards)):
+                        self.total_rewards[i] +=self.rewards[i]
+                except:
+                    pass
 
     		#yes this is the correct ai reward in case all players are ai players.
             return {"state": self.phase, "ai_reward": trick_rewards[player_win_idx], "on_table_win_idx": on_table_win_idx, "trick_rewards": trick_rewards, "player_win_idx": player_win_idx, "final_rewards": self.rewards}, round_finished, self.isGameFinished()

@@ -139,6 +139,7 @@ class player(object):
                 return True
         return False
 
+#such that sudo apt install pylint works without errors, copy here: metaclass=abc.ABCMeta
 class game(metaclass=abc.ABCMeta):
     def __init__(self, options_dict):
         # Independent stuff:
@@ -251,8 +252,7 @@ class game(metaclass=abc.ABCMeta):
 
         # print the matching
         print("\t", "partners:", self.player_names[cp]+"_"+str(cp)+"(you) play with "+self.getPartners(cp, matching))
-
-        enemy_tmp = [*range(4)]
+        enemy_tmp = [0,1,2,3]
         enemy_tmp.remove(cp)
         splited_list = np.array_split(add_states,3)
         for j,play_list in enumerate(splited_list):

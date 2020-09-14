@@ -65,6 +65,8 @@ pip3 install -r requirements.txt # the requirements.txt file is in the Tutorials
     * this means active player is in the team with itself and player 2
   * state(150x1)=card_state + add_states+matching+decl_options
 
+**TODO decl_options** ist fuer zustand gar nicht noetig oder?! was soll der damit machen?!
+
 ## Install gym environment
 ```bash
 cd gym
@@ -296,7 +298,17 @@ pyreverse -o png gameClasses.py schafkopf.py
 ```
 
 ## General gym design
+* gym-schafkopf/gym_schafkopf/envs contains:
+ * schafkopf_env.py: contains basic functions (reset, step) required for batch generation
+ * gameClasses.py
+    + contains class card
+    + contains class deck
+    + contains class player
+    + contains class game
+ * schafkopf.py: inherits from game
+ * gameLogicTests: contains unitTest to test the functionality of the other classes.
 
+![img](classes_overview.png)
 
 ## Changelog
 |Date|Description|commit|
@@ -319,11 +331,12 @@ pyreverse -o png gameClasses.py schafkopf.py
 |2020.09.11| added tut4| added_tut4_learn1  |
 |2020.09.11| added tut5| added_tut5_learnfurther |
 |2020.09.11| added test_ramsch| test_ramsch |
-
+|2020.09.14| added classes| improved_readme |
 
 Correct logic errors.....
 TODO teste ob checkt mit wem zusammenspielt....
 next: how to integrate schafkopf in the webpage?
+Denke drueber nach ob decl options ueberhaupt wichtig ist?!
 
 Siehe:
 https://www.mikoweb.eu/?p=1474
