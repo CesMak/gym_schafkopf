@@ -18,7 +18,7 @@ class gameLogic(unittest.TestCase):
         print("\n")
         return test_game
 
-    #@unittest.skip("demonstrating skipping")
+    @unittest.skip("demonstrating skipping")
     def test_deck(self):
         # worked: 24.08.2020
         test_game = self.initGame(opts_rnd, seed=22)
@@ -59,7 +59,7 @@ class gameLogic(unittest.TestCase):
         print("Rewards:")
         print(rewards)
 
-    #@unittest.skip("demonstrating skipping")
+    @unittest.skip("demonstrating skipping")
     def test_laufende(self):
         test_game = self.initGame(opts_rnd, seed=25)
         assert test_game.active_player == 0
@@ -87,7 +87,7 @@ class gameLogic(unittest.TestCase):
         rewards, round_finished, gameOver =  test_game.playUntilAI(print_=True)
         assert rewards["final_rewards"][0] == 20
 
-    #@unittest.skip("demonstrating skipping")
+    @unittest.skip("demonstrating skipping")
     def test_trumpFree(self):
         test_game = self.initGame(opts_rnd, seed=67)
         assert len(test_game.getTrumps([test_game.players[1].hand])) == 0
@@ -126,7 +126,7 @@ class gameLogic(unittest.TestCase):
         assert int(test_game.players[2].trumpFree) == 0
         assert int(test_game.players[3].trumpFree) == 0
 
-    #@unittest.skip("demonstrating skipping")
+    @unittest.skip("demonstrating skipping")
     def test_rufOptions(self):
         test_game = self.initGame(opts_rnd, seed=67)
         assert len(test_game.getTrumps([test_game.players[1].hand])) == 0
@@ -155,7 +155,7 @@ class gameLogic(unittest.TestCase):
         print(cards)
         assert len(cards) == 7
 
-    #@unittest.skip("demonstrating skipping")
+    @unittest.skip("demonstrating skipping")
     def test_winner(self):
         test_game = self.initGame(opts_rnd, seed=67)
         assert len(test_game.getTrumps([test_game.players[1].hand])) == 0
@@ -180,7 +180,7 @@ class gameLogic(unittest.TestCase):
         print(test_game.active_player)
         assert (test_game.active_player == 0)
 
-    #@unittest.skip("demonstrating skipping")
+    @unittest.skip("demonstrating skipping")
     def test_colorFree(self):
         test_game = self.initGame(opts_rnd, seed=67)
         assert len(test_game.getTrumps([test_game.players[1].hand])) == 0
@@ -213,7 +213,7 @@ class gameLogic(unittest.TestCase):
         assert test_game.players[2].colorFree[3] == 1.0
         assert test_game.players[3].colorFree[1] == 1.0
 
-    #@unittest.skip("demonstrating skipping")
+    @unittest.skip("demonstrating skipping")
     def test_gymEnvState(self):
         import gym
         import gym_schafkopf
@@ -299,7 +299,7 @@ class gameLogic(unittest.TestCase):
         # 	 Add_state for  Tim
         # 	 	  would_win 0 is free of trump 0 color(EGHZ) free [0 1 0 0]
 
-    #@unittest.skip("demonstrating skipping")
+    @unittest.skip("demonstrating skipping")
     def test_gymEnvPlaying(self):
         # learning
         # only RL player train against each other!
@@ -322,7 +322,7 @@ class gameLogic(unittest.TestCase):
         assert done == False
         assert env.my_game.correct_moves == 8
 
-    #@unittest.skip("demonstrating skipping")
+    @unittest.skip("demonstrating skipping")
     def test_printState(self):
         import gym
         import gym_schafkopf
@@ -337,7 +337,7 @@ class gameLogic(unittest.TestCase):
 
         env.my_game.printCurrentState(state)
 
-    #@unittest.skip("demonstrating skipping")
+    @unittest.skip("demonstrating skipping")
     def test_playUntilAI(self):
         import gym
         import gym_schafkopf
@@ -358,7 +358,7 @@ class gameLogic(unittest.TestCase):
         # assert total rewards after second game:
         assert (env.test_game.total_rewards[1] == 10)
 
-    #@unittest.skip("demonstrating skipping")
+    @unittest.skip("demonstrating skipping")
     def test_ramsch(self):
         import gym
         import gym_schafkopf
@@ -381,6 +381,45 @@ class gameLogic(unittest.TestCase):
         assert env.test_game.active_player == 1
         for i in [32, 22]:
             env.stepRandomPlay_Env(i, True)
+
+    @unittest.skip("demonstrating skipping")
+    def test_solo_e(self):
+        import gym
+        import gym_schafkopf
+        env = gym.make("Schafkopf-v1", seed=180)
+        state = env.resetRandomPlay_Env(print__=True)
+
+        #now Lea has to play:
+        for i in [36, 16, 1, 27, 14, 7, 25, 4, 28]:
+            env.stepRandomPlay_Env(i, True)
+        #{'state': 'playing', 'ai_reward': 26, 'on_table_win_idx': 0, 'trick_rewards': [0, 26, 0, 0], 'player_win_idx': 1, 'final_rewards': array([-15.,  45., -15., -15.])} 9
+        assert env.test_game.rewards[1] == 45
+
+    @unittest.skip("demonstrating skipping")
+    def test_solo_g(self):
+        import gym
+        import gym_schafkopf
+        env = gym.make("Schafkopf-v1", seed=180)
+        state = env.resetRandomPlay_Env(print__=True)
+
+        #now Lea has to play:
+        for i in [37, 16, 1, 27, 14, 7, 25, 4, 28]:
+            env.stepRandomPlay_Env(i, True)
+        print(env.test_game.matching)
+        assert env.test_game.rewards[1] == 45
+
+    #@unittest.skip("demonstrating skipping")
+    def test_solo_h(self):
+        import gym
+        import gym_schafkopf
+        env = gym.make("Schafkopf-v1", seed=180)
+        state = env.resetRandomPlay_Env(print__=True)
+
+        #now Lea has to play:
+        for i in [38, 16, 1, 27, 14, 25, 4, 28, 7]:
+            env.stepRandomPlay_Env(i, True)
+        print(env.test_game.matching)
+        assert env.test_game.rewards[1] == -45
 
 if __name__ == '__main__':
     unittest.main()

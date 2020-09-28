@@ -518,9 +518,14 @@ class schafkopf(game):
 
         if not ruf_wins:
             money*=-1
-        self.matching["ruf_money"] = money
-        for j in players_ruf:
-            self.rewards[j] = money
+        self.matching[type+"_money"] = money
+
+        if "ruf" in type:
+            for j in players_ruf:
+                self.rewards[j] = money
+        elif "solo" in type:
+            self.rewards[players_ruf[0]] = money*3
+
         for i in enemys:
             self.rewards[i] = money*-1
 
@@ -601,7 +606,9 @@ class schafkopf(game):
         options = [0.0]*len(self.decl_options)
         options[0] = 1.0   # weg is always an option!
         if self.phase =="declaration":
-            allowed_decl =   self.getRufDeclarations([self.players[player].hand])
+            allowed_ruf  =   self.getRufDeclarations([self.players[player].hand])
+            allowed_solo =   [i for i in self.decl_options if "solo" in i]
+            allowed_decl = allowed_ruf+allowed_solo
             # assign ruf options:
             for i in range(1,8):
                 for j in allowed_decl:
