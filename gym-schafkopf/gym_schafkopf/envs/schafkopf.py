@@ -255,6 +255,31 @@ class schafkopf(game):
                     declarations.append("ruf_"+color)
         return declarations
 
+    def getSoloDeclarations(self, cards):
+        declarations = []
+        for card in cards:
+            for color in ["E", "G", "H", "S"]:
+                if self.hasColoredCard(cards, color):
+                    tmp = "solo_"+color
+                    for mmm in self.decl_options:
+                        if tmp == mmm:
+                            declarations.append(tmp)
+                            break
+        return declarations
+
+    def getWenzGeierDeclaration(self, type, cards):
+        result = []
+        tmp    = []
+        for type in self.decl_options:
+            if type =="geier":
+                tmp = self.getAnyCards(cards, colors=["E", "G", "H", "S"], values=["O"])
+            elif type =="wenz":
+                tmp = self.getAnyCards(cards, colors=["E", "G", "H", "S"], values=["U"])
+            if len(tmp)>0:
+                result = [type]
+                break
+        return result
+
     def convertRufDeclarations2Binary(self, list_decl):
         #list_decl e.g. ["ruf_G", "ruf_E"]
         result = [0.0]*10
@@ -420,7 +445,7 @@ class schafkopf(game):
             if "RANDOM" in self.player_types[cp]:
                 ai_action            = self.getRandomValidOption()
                 if self.phase=="declaration":
-                    if print_:  print(self.player_names[cp], self.player_types[cp], cp,"trys to declare....", ai_action)
+                    if print_:  print(self.player_names[cp], self.player_types[cp], cp,"trys to declare....", self.convertIndex2Decl(ai_action))
                     rewards, round_finished, gameOver = self.step(ai_action, print_)
                     if print_:
                         print("\t "+self.player_names[cp]+": "+self.declarations[cp])
@@ -528,9 +553,9 @@ class schafkopf(game):
         if ruf_points>60:
             ruf_wins = 1
 
-        self.matching[type+"_names"]  = ruf_names
-        self.matching[type+"_points"] = ruf_points
-        self.matching[type+"_wins"]   = ruf_wins
+        self.matching["spieler_names"]  = ruf_names
+        self.matching["spieler_points"] = ruf_points
+        self.matching["spieler_wins"]   = ruf_wins
 
         # get costs of this game:
         if ruf_wins:
@@ -556,7 +581,7 @@ class schafkopf(game):
 
         if not ruf_wins:
             money*=-1
-        self.matching[type+"_money"] = money
+        self.matching["money"] = money
 
         if "ruf" in type:
             for j in players_ruf:
@@ -645,9 +670,9 @@ class schafkopf(game):
         options[0] = 1.0   # weg is always an option!
         if self.phase =="declaration":
             allowed_ruf  =   self.getRufDeclarations([self.players[player].hand])
-            allowed_solo =   [i for i in self.decl_options if "solo" in i]
-            wenz         =   [i for i in self.decl_options if "wenz" in i]
-            geier        =   [i for i in self.decl_options if "geier" in i]
+            allowed_solo =   self.getSoloDeclarations([self.players[player].hand])
+            wenz         =   self.getWenzGeierDeclaration("wenz", [self.players[player].hand])
+            geier        =   self.getWenzGeierDeclaration("geier", [self.players[player].hand])
             allowed_decl = allowed_ruf+wenz+geier+allowed_solo
             # assign ruf options:
             for i in range(1,11):
@@ -724,7 +749,8 @@ class schafkopf(game):
         if "RL" in self.player_types[cp] or "HUMAN" in self.player_types[cp]:
             if self.phase == "declaration" and ai_action>31:
                 allowed_decl = self.getBinaryDeclarations(cp)
-                if print_: print(self.player_names[cp], self.player_types[cp],"trys to declare....", ai_action," allowed is", allowed_decl)
+                if print_:
+                    print(self.player_names[cp], self.player_types[cp],"trys to declare....", self.convertIndex2Decl(ai_action)," allowed is", allowed_decl)
                 if allowed_decl[ai_action-32] == 1.0:
                     self.correct_moves +=1
                     rewards, round_finished, gameOver = self.step(ai_action, print_)

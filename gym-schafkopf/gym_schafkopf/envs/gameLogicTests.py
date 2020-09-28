@@ -430,17 +430,17 @@ class gameLogic(unittest.TestCase):
     def test_solo_wenz(self):
         import gym
         import gym_schafkopf
-        env = gym.make("Schafkopf-v1", seed=56)
+        env = gym.make("Schafkopf-v1", seed=58)
         state = env.resetRandomPlay_Env(print__=True)
 
         for i in [36]:
             env.stepRandomPlay_Env(i, True)
 
         #now Lea has to play:
-        for i in [7, 3, 11, 19, 22, 2, 8, 10]:
+        for i in [8, 24, 21, 11, 3, 9, 13, 31]:
             env.stepRandomPlay_Env(i, True)
         print(env.test_game.matching)
-        assert env.test_game.rewards[1] == 75
+        assert env.test_game.rewards[1] == 30
 
 if __name__ == '__main__':
     unittest.main()
@@ -448,9 +448,11 @@ if __name__ == '__main__':
         # for seeeede in range(20,2000):
         #     env = gym.make("Schafkopf-v1", seed=seeeede)
         #     state = env.resetRandomPlay_Env(print__=True)
-        #     print(seeeede)
-        #     for i in [36]:
-        #         env.stepRandomPlay_Env(i, True)
-        #     if "wenz" in env.test_game.matching["type"]:
-        #         print("seeeeed:", seeeede)
-        #         break
+        #     allowed_decl = env.test_game.getBinaryDeclarations(env.test_game.active_player)
+        #     if allowed_decl[4] == 1.0:
+        #         print(seeeede)
+        #         for i in [36]:
+        #             env.stepRandomPlay_Env(i, True)
+        #         if "wenz" in env.test_game.matching["type"]:
+        #             print("seeeeed:", seeeede)
+        #             break
