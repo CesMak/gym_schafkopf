@@ -12,8 +12,8 @@ class schafkopf(game):
         super().__init__(options_dict)
 
         # Specific for Schafkopf:
-        self.decl_options   = ["weg", "ruf_E", "ruf_G", "ruf_S"] # , "hochzeit", "bettel", "solo"
-        self.solo_options   = []             # ["solo_e", "solo_g", "solo_h", "solo_s", "geier", "wenz"]
+        self.decl_options   = ["weg", "ruf_E", "ruf_G", "ruf_S", "solo_E", "solo_G", "solo_H", "solo_S"] # ordered declaration_options
+        #self.solo_options   = []             # ["solo_e", "solo_g", "solo_h", "solo_s", "geier", "wenz"]
         self.declarations   = []
         self.phase          = "declaration"  # declaration, (contra, retour), playing
         # dummy initiatlization is necessary for matching! (do not change otherwise schafkopf_env will not work)
@@ -33,10 +33,26 @@ class schafkopf(game):
         super().setup_game()
         self.active_player     = self.nextGamePlayer()
         self.correct_moves     = 0
-        self.phase          = "declaration"
+        self.phase             = "declaration"
+        self.matching          = {}
         self.declarations      = []
         for i in range (self.nu_players):
             self.declarations.append("")
+
+    def sortCards(self, inputCards):
+        # sortiert karten aufsteigend
+        self.setTrickOrder() # setze Herz als standard
+        order_index = []
+        for card in inputCards:
+            order_index.append(self.matching["order"].index(card.idx))
+        order_index = sorted(order_index)
+        result_cards = []
+        for i in order_index:
+            idx = self.matching["order"][i]
+            for j in inputCards:
+                if j.idx == idx:
+                    result_cards.append(j)
+        return result_cards
 
     def DeclarationFinished(self):
         for i in self.declarations:
@@ -90,20 +106,35 @@ class schafkopf(game):
             for i in ["O", "U"]:
                 for j in ["E", "G", "H", "S"]:
                     trick_order.append(self.idxOfName(i, j))
-            for i in ["A", "10", "K", "9", "8", "7"]:
+            for i in ["A", "X", "K", "9", "8", "7"]:
                 trick_order.append(self.idxOfName(i, trump))
             if len(lead_color) != 0:
-                for i in ["A", "10", "K", "9", "8", "7"]:
+                for i in ["A", "X", "K", "9", "8", "7"]:
                     trick_order.append(self.idxOfName(i, lead_color))
             other_cols  = ["E", "G", "H", "S"]
             others_cols = other_cols.remove(trump)
             if len(lead_color) != 0:
                 others_cols = other_cols.remove(lead_color)
             for z in other_cols:
-                for i in ["A", "10", "K", "9", "8", "7"]:
+                for i in ["A", "X", "K", "9", "8", "7"]:
                     trick_order.append(self.idxOfName(i, z))
         #print(super().idxList2Cards(list(reversed(trick_order))))
         self.matching["order"] = list(reversed(trick_order))
+
+    def convertDecl2Index(self, decl):
+        tmp = 32
+        if decl =="weg":    tmp=32
+        elif decl=="ruf_E": tmp =33
+        elif decl=="ruf_G": tmp =34
+        elif decl=="ruf_S": tmp =35
+        return tmp
+
+    def convertIndex2Decl(self, index):
+        return self.decl_options[index-32]
+
+    def assignRewards(self):
+        for i, player in enumerate(self.players):
+            self.rewards[i] = self.countResult(player.offhand)
 
     def setDeclaration(self, prev_declarations):
         # set matching
@@ -179,16 +210,16 @@ class schafkopf(game):
 
     def hasColoredCard(self, cards, color, without_trumpfs=True):
         for card in cards:
-            my_list = ["7", "8", "9", "U", "O", "K", "10", "A"]
+            my_list = ["7", "8", "9", "U", "O", "K", "X", "A"]
             if without_trumpfs:
-                my_list = ["7", "8", "9", "K", "10", "A"]
+                my_list = ["7", "8", "9", "K", "X", "A"]
             for i in my_list:
                 if super().hasSpecificCard(i, color, cards, doConversion=True):
                     return True
         return False
 
     def getColoredCards(self, cards, color):
-        return self.getAnyCards(cards, colors=[color], values=["7", "8", "9", "K", "10", "A"])
+        return self.getAnyCards(cards, colors=[color], values=["7", "8", "9", "K", "X", "A"])
 
     def getRufDeclarations(self, cards):
         declarations = []
@@ -210,7 +241,7 @@ class schafkopf(game):
                     result[i] = 0.0
         return result
 
-    def getAnyCards(self, cards, colors=["E", "G", "H", "S"], values=["7", "8", "9", "K", "10", "A"]):
+    def getAnyCards(self, cards, colors=["E", "G", "H", "S"], values=["7", "8", "9", "K", "X", "A"]):
         found_cards = []
         for card in cards:
             for value in values:
@@ -409,6 +440,7 @@ class schafkopf(game):
                 self.assignRewards()
 
             if self.isGameFinished():
+                self.matching["final_points"] =','.join([str(elem) for elem in self.rewards])
                 self.getPoints(print_)
                 # following might throw assignment destination is read-only (when using python3)
                 try:
@@ -430,7 +462,7 @@ class schafkopf(game):
         for stich in input_cards:
             for card in stich:
                 if card is not None:
-                    for cards_value, value in zip(["A", "10", "K", "O", "U"], [11, 10, 4, 3, 2]):
+                    for cards_value, value in zip(["A", "X", "K", "O", "U"], [11, 10, 4, 3, 2]):
                         if (str(card.getConversion())) == cards_value:
                             result += value
                             break
@@ -445,6 +477,7 @@ class schafkopf(game):
 
             ruf_points            = 0
             ruf_names             = []
+            enemy_names           = []
             ruf_wins              = 0
             money                 = 5
 
@@ -454,6 +487,10 @@ class schafkopf(game):
             if ruf_points>60:
                 ruf_wins = 1
 
+            self.matching["ruf_names"]  = ruf_names
+            self.matching["ruf_points"] = ruf_points
+            self.matching["ruf_wins"]   = ruf_wins
+
             # get costs of this game:
             if ruf_wins:
                 tmp = ruf_points
@@ -462,8 +499,10 @@ class schafkopf(game):
 
             if tmp>90:
                 money+=5
+                self.matching["schneider"] = True
             if tmp==120:
                 money+=5
+                self.matching["schwarz"]   = True
 
             # TODO assign ober etc.
             if self.matching["nuLaufende"]>2:
@@ -471,7 +510,7 @@ class schafkopf(game):
 
             if not ruf_wins:
                 money*=-1
-
+            self.matching["ruf_money"] = money
             for j in players_ruf:
                 self.rewards[j] = money
             for i in enemys:
@@ -616,7 +655,7 @@ class schafkopf(game):
         33,34,35 = ruf_E, ruf_G, ruf_S
         '''
         cp    =  self.active_player
-        if "RL" in self.player_types[cp]:
+        if "RL" in self.player_types[cp] or "HUMAN" in self.player_types[cp]:
             if self.phase == "declaration" and ai_action>31:
                 allowed_decl = self.getBinaryDeclarations(cp)
                 if print_: print(self.player_names[cp], self.player_types[cp],"trys to declare....", ai_action," allowed is", allowed_decl)

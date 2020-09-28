@@ -191,6 +191,7 @@ class game(metaclass=abc.ABCMeta):
         for i, card in enumerate(self.players[player_idx].hand):
             if card.idx == idx:
                 return i
+        return None
 
     def idxList2Cards(self, idxlist):
         result  = []
@@ -212,7 +213,7 @@ class game(metaclass=abc.ABCMeta):
         # for p in self.players:
         #     p.showHand()
     def card2Idx(self, suit, rank):
-        test = deck(self.nu_cards, self.seed)
+        test = deck(self.nu_cards, self.colors, self.value_conversion, self.seed)
         for i in test.cards:
             if i.color == suit and int(i.value)==int(rank):
                 return i.idx
@@ -333,10 +334,6 @@ class game(metaclass=abc.ABCMeta):
             return None
         rand_card = random.randrange(len(options))
         return rand_card
-
-    def assignRewards(self):
-        for i, player in enumerate(self.players):
-            self.rewards[i] = self.countResult(player.offhand)
 
     def isGameFinished(self):
         cards = 0
@@ -484,12 +481,18 @@ class game(metaclass=abc.ABCMeta):
 
 
     @abc.abstractmethod
-    def countResult(self, input_cards):
+    def countResult(self, input_cards, offhandCards):
         '''
         @return:
         '''
         pass
 
+    @abc.abstractmethod
+    def assignRewards(self):
+        '''
+        @return:
+        '''
+        pass
     @abc.abstractmethod
     def getBinaryOptions(self, incolor, players, cards, shifting):
         '''
