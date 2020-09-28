@@ -3,7 +3,7 @@ from schafkopf import schafkopf
 import numpy as np
 
 
-opts_rnd   = {"names": ["Max", "Lea", "Jo", "Tim"], "type": ["RANDOM", "RANDOM", "RANDOM", "RANDOM"], "nu_cards": 8, "active_player": 3, "seed": None, "colors": ['E', 'G', 'H', 'S'], "value_conversion": {1: "7", 2: "8", 3: "9", 4: "U", 5: "O", 6: "K", 7: "10", 8: "A"}}
+opts_rnd   = {"names": ["Max", "Lea", "Jo", "Tim"], "type": ["RANDOM", "RANDOM", "RANDOM", "RANDOM"], "nu_cards": 8, "active_player": 3, "seed": None, "colors": ['E', 'G', 'H', 'S'], "value_conversion": {1: "7", 2: "8", 3: "9", 4: "U", 5: "O", 6: "K", 7: "X", 8: "A"}}
 
 class gameLogic(unittest.TestCase):
     def setUp(self):
@@ -18,7 +18,7 @@ class gameLogic(unittest.TestCase):
         print("\n")
         return test_game
 
-    @unittest.skip("demonstrating skipping")
+    #@unittest.skip("demonstrating skipping")
     def test_deck(self):
         # worked: 24.08.2020
         test_game = self.initGame(opts_rnd, seed=22)
@@ -59,7 +59,7 @@ class gameLogic(unittest.TestCase):
         print("Rewards:")
         print(rewards)
 
-    @unittest.skip("demonstrating skipping")
+    #@unittest.skip("demonstrating skipping")
     def test_laufende(self):
         test_game = self.initGame(opts_rnd, seed=25)
         assert test_game.active_player == 0
@@ -75,7 +75,7 @@ class gameLogic(unittest.TestCase):
         assert test_game.hasSpecificCard("O", "H", [test_game.players[1].hand], doConversion=True) == True
         assert test_game.hasSpecificCard("O", "E", [test_game.players[3].hand], doConversion=True) == True
         assert test_game.hasSpecificCard("O", "G", [test_game.players[3].hand], doConversion=True) == True
-        assert test_game.matching["nuLaufende"] == 3
+        assert test_game.matching["nuLaufende"] == 2
 
         print("\n\n Test get Options:")
         print(test_game.on_table_cards)
@@ -87,7 +87,7 @@ class gameLogic(unittest.TestCase):
         rewards, round_finished, gameOver =  test_game.playUntilAI(print_=True)
         assert rewards["final_rewards"][0] == 20
 
-    @unittest.skip("demonstrating skipping")
+    #@unittest.skip("demonstrating skipping")
     def test_trumpFree(self):
         test_game = self.initGame(opts_rnd, seed=67)
         assert len(test_game.getTrumps([test_game.players[1].hand])) == 0
@@ -126,7 +126,7 @@ class gameLogic(unittest.TestCase):
         assert int(test_game.players[2].trumpFree) == 0
         assert int(test_game.players[3].trumpFree) == 0
 
-    @unittest.skip("demonstrating skipping")
+    #@unittest.skip("demonstrating skipping")
     def test_rufOptions(self):
         test_game = self.initGame(opts_rnd, seed=67)
         assert len(test_game.getTrumps([test_game.players[1].hand])) == 0
@@ -155,7 +155,7 @@ class gameLogic(unittest.TestCase):
         print(cards)
         assert len(cards) == 7
 
-    @unittest.skip("demonstrating skipping")
+    #@unittest.skip("demonstrating skipping")
     def test_winner(self):
         test_game = self.initGame(opts_rnd, seed=67)
         assert len(test_game.getTrumps([test_game.players[1].hand])) == 0
@@ -180,7 +180,7 @@ class gameLogic(unittest.TestCase):
         print(test_game.active_player)
         assert (test_game.active_player == 0)
 
-    @unittest.skip("demonstrating skipping")
+    #@unittest.skip("demonstrating skipping")
     def test_colorFree(self):
         test_game = self.initGame(opts_rnd, seed=67)
         assert len(test_game.getTrumps([test_game.players[1].hand])) == 0
@@ -213,11 +213,11 @@ class gameLogic(unittest.TestCase):
         assert test_game.players[2].colorFree[3] == 1.0
         assert test_game.players[3].colorFree[1] == 1.0
 
-    @unittest.skip("demonstrating skipping")
+    #@unittest.skip("demonstrating skipping")
     def test_gymEnvState(self):
         import gym
         import gym_schafkopf
-        env = gym.make("Schafkopf-v1", options={"names": ["Max", "Lea", "Jo", "Tim"], "type": ["RANDOM", "RANDOM", "RANDOM", "RANDOM"], "nu_cards": 8, "active_player": 3, "seed": 67, "colors": ['E', 'G', 'H', 'S'], "value_conversion": {1: "7", 2: "8", 3: "9", 4: "U", 5: "O", 6: "K", 7: "10", 8: "A"}})
+        env = gym.make("Schafkopf-v1", options={"names": ["Max", "Lea", "Jo", "Tim"], "type": ["RANDOM", "RANDOM", "RANDOM", "RANDOM"], "nu_cards": 8, "active_player": 3, "seed": 67, "colors": ['E', 'G', 'H', 'S'], "value_conversion": {1: "7", 2: "8", 3: "9", 4: "U", 5: "O", 6: "K", 7: "X", 8: "A"}})
         env.reset()
 
         env.my_game.printHands()
@@ -278,7 +278,8 @@ class gameLogic(unittest.TestCase):
         print(add_states, len(add_states))
 
         matching = env.my_game.getMatchingBinary(env.my_game.active_player)
-        print("Matching of", env.my_game.player_names[env.my_game.active_player], env.my_game.active_player, "partner:", env.my_game.matching["partner"], matching)
+        print(matching)  # type should be Herz solo!
+        print(env.my_game.matching)
 
         print("\nNow print the whole state nicely:")
         env.my_game.printCurrentState()
@@ -298,13 +299,13 @@ class gameLogic(unittest.TestCase):
         # 	 Add_state for  Tim
         # 	 	  would_win 0 is free of trump 0 color(EGHZ) free [0 1 0 0]
 
-    @unittest.skip("demonstrating skipping")
+    #@unittest.skip("demonstrating skipping")
     def test_gymEnvPlaying(self):
         # learning
         # only RL player train against each other!
         import gym
         import gym_schafkopf
-        env = gym.make("Schafkopf-v1", options={"names": ["Max", "Lea", "Jo", "Tim"], "type": ["RL", "RL", "RL", "RL"], "nu_cards": 8, "active_player": 3, "seed": 67, "colors": ['E', 'G', 'H', 'S'], "value_conversion": {1: "7", 2: "8", 3: "9", 4: "U", 5: "O", 6: "K", 7: "10", 8: "A"}})
+        env = gym.make("Schafkopf-v1", options={"names": ["Max", "Lea", "Jo", "Tim"], "type": ["RL", "RL", "RL", "RL"], "nu_cards": 8, "active_player": 3, "seed": 67, "colors": ['E', 'G', 'H', 'S'], "value_conversion": {1: "7", 2: "8", 3: "9", 4: "U", 5: "O", 6: "K", 7: "X", 8: "A"}})
         env.reset()
 
         env.my_game.printHands()
@@ -321,11 +322,11 @@ class gameLogic(unittest.TestCase):
         assert done == False
         assert env.my_game.correct_moves == 8
 
-    @unittest.skip("demonstrating skipping")
+    #@unittest.skip("demonstrating skipping")
     def test_printState(self):
         import gym
         import gym_schafkopf
-        env = gym.make("Schafkopf-v1", options={"names": ["Max", "Lea", "Jo", "Tim"], "type": ["RL", "RL", "RL", "RL"], "nu_cards": 8, "active_player": 3, "seed": 67, "colors": ['E', 'G', 'H', 'S'], "value_conversion": {1: "7", 2: "8", 3: "9", 4: "U", 5: "O", 6: "K", 7: "10", 8: "A"}})
+        env = gym.make("Schafkopf-v1", options={"names": ["Max", "Lea", "Jo", "Tim"], "type": ["RL", "RL", "RL", "RL"], "nu_cards": 8, "active_player": 3, "seed": 67, "colors": ['E', 'G', 'H', 'S'], "value_conversion": {1: "7", 2: "8", 3: "9", 4: "U", 5: "O", 6: "K", 7: "X", 8: "A"}})
         state = env.reset()
         print("len-state:", len(state))
         print(state)
@@ -336,7 +337,7 @@ class gameLogic(unittest.TestCase):
 
         env.my_game.printCurrentState(state)
 
-    @unittest.skip("demonstrating skipping")
+    #@unittest.skip("demonstrating skipping")
     def test_playUntilAI(self):
         import gym
         import gym_schafkopf
@@ -357,6 +358,7 @@ class gameLogic(unittest.TestCase):
         # assert total rewards after second game:
         assert (env.test_game.total_rewards[1] == 10)
 
+    #@unittest.skip("demonstrating skipping")
     def test_ramsch(self):
         import gym
         import gym_schafkopf

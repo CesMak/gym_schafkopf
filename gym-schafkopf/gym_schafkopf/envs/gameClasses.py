@@ -231,8 +231,9 @@ class game(metaclass=abc.ABCMeta):
         if state is None:
             state = self.getState().flatten().astype(np.int)
         ll    = self.nu_players * self.nu_cards
+        #[on_table+ on_hand+ played+ play_options+ add_states+matching+decl_options+[self.active_player]]
         on_table, on_hand, played, play_options= state[0:ll], state[ll:2*ll], state[ll*2:3*ll], state[3*ll:4*ll]
-        add_states, matching, decl_opts, cp = state[4*ll:4*ll+18], state[4*ll+18:len(state)-(1+len(self.declarations))], state[len(state)-(1+len(self.declarations)):len(state)-1], state[len(state)-1]
+        add_states, matching, decl_opts, cp = state[4*ll:4*ll+18], state[4*ll+18:len(state)-(1+len(self.decl_options))], state[len(state)-(1+len(self.decl_options)):len(state)-1], state[len(state)-1]
         return on_table, on_hand, played, play_options, add_states, matching, decl_opts, cp
 
     def getPartners(self, active_player, matchingBinary):

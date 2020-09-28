@@ -73,7 +73,7 @@ class schafkopf(game):
             self.assignDeclaration([self.players[i].hand], i, use_random=True)
 
     def getWinningDeclaration(self, actual, new_decl):
-        if "ruf" in actual and "ruf" in new_decl:
+        if ("ruf" in actual and "ruf" in new_decl) or ("solo" in actual and "solo" in new_decl):
             return False
         if self.decl_options.index(new_decl)>self.decl_options.index(actual):
             return True
@@ -127,6 +127,10 @@ class schafkopf(game):
         elif decl=="ruf_E": tmp =33
         elif decl=="ruf_G": tmp =34
         elif decl=="ruf_S": tmp =35
+        elif decl=="solo_E": tmp =36
+        elif decl=="solo_G": tmp =37
+        elif decl=="solo_H": tmp =38
+        elif decl=="solo_S": tmp =39
         return tmp
 
     def convertIndex2Decl(self, index):
@@ -147,48 +151,47 @@ class schafkopf(game):
         #     solo_decl = self.solo_options[random.randrange(len(self.solo_options))]
 
         highest, idx = self.getHighestDeclaration(prev_declarations)
-        #
-        # if use_random and "ruf" in self.decl_options:
-        #     ruf_decl  = self.getRufDeclarations([self.players[idx].hand])
-        #     ruf_decl  = ruf_decl[random.randrange(len(ruf_decl))]
-
-        if "solo" in highest:
-            self.matching["type"]    = highest
-            #TODO:
-            self.matching["trump"]   = "H"
-        elif highest=="weg":
-            self.matching["type"]    = "ramsch"
-        elif "ruf" in highest:
-            self.matching["type"]    = highest
-            self.matching["partner"] = self.getPlayerIdxOfSpecificCard("A", highest.split("_")[1])
-
-        else: # hochzeit, bettel
-            self.matching["type"]    = highest
-
         self.matching["spieler"]     = idx
         self.matching["trump"]       = "H"
 
-        self.setTrickOrder(trump=self.matching["trump"])
+        if "solo" in highest:
+            self.matching["type"]    = highest
+            self.matching["trump"]   = highest.split("_")[1]
+            self.setTrickOrder(trump=self.matching["trump"])
+            self.assignLaufende([self.matching["spieler"]])
+        elif highest=="weg":
+            self.matching["type"]    = "ramsch"
+            self.setTrickOrder(trump=self.matching["trump"])
+        elif "ruf" in highest:
+            self.matching["type"]    = highest
+            self.matching["partner"] = self.getPlayerIdxOfSpecificCard("A", highest.split("_")[1])
+            tmp                      = [self.matching["spieler"], self.matching["partner"]]
+            self.setTrickOrder(trump=self.matching["trump"])
+            self.assignLaufende(tmp)
+        else: # hochzeit, bettel
+            self.matching["type"]    = highest
+            self.setTrickOrder(trump=self.matching["trump"])
 
-        if "ruf" in self.matching["type"]:
-            tmp                   = [self.matching["spieler"], self.matching["partner"]]
-            players_ruf           = [self.players[i].hand for i in tmp]
-            players_ruf           = [item for sublist in players_ruf for item in sublist]
 
-            enemys                = list(range(4))
-            enemys                = [i for j, i in enumerate(enemys) if j not in tmp]
-            enemys                = [self.players[i].hand for i in enemys]
-            enemys                = [item for sublist in enemys for item in sublist]
-
-            ruf_laufende   = self.getNuLaufende(players_ruf)
-            enemy_laufende = self.getNuLaufende(enemys)
-            if ruf_laufende>enemy_laufende:
-                self.matching["nuLaufende"] = ruf_laufende
-            else:
-                self.matching["nuLaufende"] = enemy_laufende
 
         if self.DeclarationFinished():
             self.phase = "playing"
+
+    def assignLaufende(self, tmp):
+        players_ruf           = [self.players[i].hand for i in tmp]
+        players_ruf           = [item for sublist in players_ruf for item in sublist]
+
+        enemys                = list(range(4))
+        enemys                = [i for j, i in enumerate(enemys) if j not in tmp]
+        enemys                = [self.players[i].hand for i in enemys]
+        enemys                = [item for sublist in enemys for item in sublist]
+
+        ruf_laufende   = self.getNuLaufende(players_ruf)
+        enemy_laufende = self.getNuLaufende(enemys)
+        if ruf_laufende>enemy_laufende:
+            self.matching["nuLaufende"] = ruf_laufende
+        else:
+            self.matching["nuLaufende"] = enemy_laufende
 
     def getNuLaufende(self, cards):
         counter        = 0
@@ -231,12 +234,16 @@ class schafkopf(game):
 
     def convertRufDeclarations2Binary(self, list_decl):
         #list_decl e.g. ["ruf_G", "ruf_E"]
-        result = [0.0]*4
-        for i in range(4):
+        result = [0.0]*8
+        for i in range(8):
             for j in list_decl:
                 if "ruf_E" in j:   result[0]=1.0
                 elif "ruf_G" in j: result[1]=1.0
                 elif "ruf_S" in j: result[2]=1.0
+                elif "solo_E" in j: result[3]=1.0
+                elif "solo_G" in j: result[4]=1.0
+                elif "solo_H" in j: result[5]=1.0
+                elif "solo_S" in j: result[6]=1.0
                 else:
                     result[i] = 0.0
         return result
@@ -359,20 +366,18 @@ class schafkopf(game):
         #on_table_win_idx: player in sequence that one!
         highest_value    = 0
         winning_card     = self.on_table_cards[0]
-        if "ruf" in self.matching["type"] or "hochzeit" in self.matching["type"] or "ramsch" in self.matching["type"]:
-            # do a reordering according to incolor! (otherwise eichel beats green etc.)
-            incolor = self.getInColor(self.on_table_cards)
-            if incolor is not None and incolor != "trump" and incolor != self.matching["trump"]:
-                self.setTrickOrder(trump=self.matching["trump"], lead_color=incolor)
-            for i, card in enumerate(self.on_table_cards):
-                rank = self.matching["order"].index(card.idx)
-                if card is not None and rank > highest_value:
-                    highest_value = rank
-                    winning_card = card
-                    on_table_win_idx = i
-            player_win_idx = self.player_names.index(winning_card.player)
-        else: # solo
-            print("TODO")
+        #if "ruf" in self.matching["type"] or "hochzeit" in self.matching["type"] or "ramsch" in self.matching["type"]:
+        # do a reordering according to incolor! (otherwise eichel beats green etc.)
+        incolor = self.getInColor(self.on_table_cards)
+        if incolor is not None and incolor != "trump" and incolor != self.matching["trump"]:
+            self.setTrickOrder(trump=self.matching["trump"], lead_color=incolor)
+        for i, card in enumerate(self.on_table_cards):
+            rank = self.matching["order"].index(card.idx)
+            if card is not None and rank > highest_value:
+                highest_value = rank
+                winning_card = card
+                on_table_win_idx = i
+        player_win_idx = self.player_names.index(winning_card.player)
         return winning_card, on_table_win_idx, player_win_idx
 
 
@@ -468,60 +473,66 @@ class schafkopf(game):
                             break
         return result
 
+    def evaluateGame(self, type, print_):
+        type=type.split("_")[0]
+        if type=="solo":
+            players_ruf       = [self.matching["spieler"]]
+            money             = 15
+        elif type == "ruf":
+            players_ruf           = [self.matching["spieler"], self.matching["partner"]]
+            money                 = 5
+        enemys                = list(range(4))
+        enemys                = [i for j, i in enumerate(enemys) if j not in players_ruf]
+
+        ruf_points            = 0
+        ruf_names             = []
+        enemy_names           = []
+        ruf_wins              = 0
+
+        for j in players_ruf:
+            ruf_names.append(self.players[j].name)
+            ruf_points  += self.rewards[j]
+        if ruf_points>60:
+            ruf_wins = 1
+
+        self.matching[type+"_names"]  = ruf_names
+        self.matching[type+"_points"] = ruf_points
+        self.matching[type+"_wins"]   = ruf_wins
+
+        # get costs of this game:
+        if ruf_wins:
+            tmp = ruf_points
+        else:
+            tmp = 120-ruf_points
+
+        if tmp>90:
+            money+=5
+            self.matching["schneider"] = True
+        if tmp==120:
+            money+=5
+            self.matching["schwarz"]   = True
+
+        # TODO assign ober etc.
+        if self.matching["nuLaufende"]>2:
+            money +=self.matching["nuLaufende"]*5
+
+        if not ruf_wins:
+            money*=-1
+        self.matching["ruf_money"] = money
+        for j in players_ruf:
+            self.rewards[j] = money
+        for i in enemys:
+            self.rewards[i] = money*-1
+
+        if print_:
+            print("")
+            if "ruf" in type:
+                print(self.matching["type"]+": "+ruf_names[0]+" called "+ruf_names[1])
+            print("poitns", ruf_points, "--> money: ", money)
+            print("Rewards:", self.rewards)
+
     def getPoints(self, print_=False):
         # according to self.rewards get the final Points and store them in the rewards!
-        if "ruf" in self.matching["type"]:
-            players_ruf           = [self.matching["spieler"], self.matching["partner"]]
-            enemys                = list(range(4))
-            enemys                = [i for j, i in enumerate(enemys) if j not in players_ruf]
-
-            ruf_points            = 0
-            ruf_names             = []
-            enemy_names           = []
-            ruf_wins              = 0
-            money                 = 5
-
-            for j in players_ruf:
-                ruf_names.append(self.players[j].name)
-                ruf_points  += self.rewards[j]
-            if ruf_points>60:
-                ruf_wins = 1
-
-            self.matching["ruf_names"]  = ruf_names
-            self.matching["ruf_points"] = ruf_points
-            self.matching["ruf_wins"]   = ruf_wins
-
-            # get costs of this game:
-            if ruf_wins:
-                tmp = ruf_points
-            else:
-                tmp = 120-ruf_points
-
-            if tmp>90:
-                money+=5
-                self.matching["schneider"] = True
-            if tmp==120:
-                money+=5
-                self.matching["schwarz"]   = True
-
-            # TODO assign ober etc.
-            if self.matching["nuLaufende"]>2:
-                money +=self.matching["nuLaufende"]*5
-
-            if not ruf_wins:
-                money*=-1
-            self.matching["ruf_money"] = money
-            for j in players_ruf:
-                self.rewards[j] = money
-            for i in enemys:
-                self.rewards[i] = money*-1
-
-            if print_:
-                print("")
-                print(self.matching["type"]+": "+ruf_names[0]+" called "+ruf_names[1])
-                print("poitns", ruf_points, "--> money: ", money)
-                print("Rewards:", self.rewards)
-
         if "ramsch" in self.matching["type"]:
             if print_:
                 print("")
@@ -550,6 +561,8 @@ class schafkopf(game):
             if print_:
                 print("\tLooser:", self.player_names[looser_idx], "has", max_reward)
                 print("\tRewards:", self.rewards)
+        else: # solo or ruf
+            self.evaluateGame(self.matching["type"], print_)
 
 
     def getState(self):
@@ -590,11 +603,15 @@ class schafkopf(game):
         if self.phase =="declaration":
             allowed_decl =   self.getRufDeclarations([self.players[player].hand])
             # assign ruf options:
-            for i in range(1,4):
+            for i in range(1,8):
                 for j in allowed_decl:
                     if "ruf_E" in j:   options[1]=1.0
                     elif "ruf_G" in j: options[2]=1.0
                     elif "ruf_S" in j: options[3]=1.0
+                    elif "solo_E" in j: options[4]=1.0
+                    elif "solo_G" in j: options[5]=1.0
+                    elif "solo_H" in j: options[6]=1.0
+                    elif "solo_S" in j: options[7]=1.0
                     else:
                         options[i] = 0.0
         return options
@@ -625,7 +642,7 @@ class schafkopf(game):
                 else:
                     for i in enemys:
                         matching[i] = 1.0
-            elif "ramsch" in self.matching["type"]:
+            else: # case of solo or "ramsch" in self.matching["type"]:
                 if self.matching["spieler"] == playeridx:
                     matching[playeridx] = 1.0
         return matching
