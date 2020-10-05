@@ -88,17 +88,17 @@ class Memory:
         return b
 
 class ActorModel(nn.Module):
-    def __init__(self, state_dim, action_dim, n_latent_var):
+    def __init__(self, state_dim, action_dim, nu_cards, n_latent_var):
         super(ActorModel, self).__init__()
-        self.a_dim   = action_dim
-
-        self.ac      = nn.Linear(state_dim, n_latent_var)
-        self.ac_prelu= nn.PReLU()
+        self.a_dim    = action_dim
+        self.nu_cards = nu_cards
+        self.ac       = nn.Linear(state_dim, n_latent_var)
+        self.ac_prelu = nn.PReLU()
         self.ac1      = nn.Linear(n_latent_var, n_latent_var)
         self.ac1_prelu= nn.PReLU()
 
         # Actor layers:
-        self.a1      = nn.Linear(n_latent_var+action_dim, action_dim)
+        self.a1      = nn.Linear(n_latent_var+self.nu_cards, action_dim)
 
         # Critic layers:
         self.c1      = nn.Linear(n_latent_var, n_latent_var)
@@ -119,10 +119,10 @@ class ActorModel(nn.Module):
 
         # Get Actor Result:
         if len(input.shape)==1:
-            options = input[self.a_dim*3:self.a_dim*4]
+            options = input[self.nu_cards*3:self.nu_cards*4]
             actor_out =torch.cat( [ac, options], 0)
         else:
-            options = input[:, self.a_dim*3:self.a_dim*4]
+            options = input[:, self.nu_cards*3:self.nu_cards*4]
             actor_out   = torch.cat( [ac, options], 1)
         actor_out = self.a1(actor_out)
         actor_out = actor_out.softmax(dim=-1)
@@ -135,12 +135,13 @@ class ActorModel(nn.Module):
         return actor_out, critic
 
 class ActorCritic(nn.Module):
-    def __init__(self, state_dim, action_dim, n_latent_var):
+    def __init__(self, state_dim, action_dim, nu_cards, n_latent_var):
         super(ActorCritic, self).__init__()
         self.a_dim   = action_dim
+        self.nu_cards= nu_cards
 
         # actor critic
-        self.actor_critic = ActorModel(state_dim, action_dim, n_latent_var)
+        self.actor_critic = ActorModel(state_dim, action_dim, nu_cards, n_latent_var)
 
     def act(self, state, memory):
         if type(state) is np.ndarray:
@@ -168,16 +169,16 @@ class ActorCritic(nn.Module):
         return action_logprobs, torch.squeeze(state_value), dist_entropy
 
 class PPO:
-    def __init__(self, state_dim, action_dim, n_latent_var, lr, betas, gamma, K_epochs, eps_clip):
+    def __init__(self, state_dim, action_dim, nu_cards, n_latent_var, lr, betas, gamma, K_epochs, eps_clip):
         self.lr = lr
         self.betas = betas
         self.gamma = gamma
         self.eps_clip = eps_clip
         self.K_epochs = K_epochs
 
-        self.policy = ActorCritic(state_dim, action_dim, n_latent_var)
+        self.policy = ActorCritic(state_dim, action_dim, nu_cards, n_latent_var)
         self.optimizer = torch.optim.Adam(self.policy.parameters(), lr=lr, betas=betas, weight_decay=5e-5) # eps=1e-5
-        self.policy_old = ActorCritic(state_dim, action_dim, n_latent_var)
+        self.policy_old = ActorCritic(state_dim, action_dim, nu_cards, n_latent_var)
         self.policy_old.load_state_dict(self.policy.state_dict())
         #Do not use torch.optim.lr_scheduler to decrease lr. Increase Batch size instead!!! (see paper)
         self.MseLoss = nn.MSELoss() # MSELossFlat # SmoothL1Loss
@@ -343,7 +344,7 @@ def learn_single(ppo, update_timestep, eps_decay, env, increase_batch, log_path,
     steps           = int(update_timestep/nu_remote)
     increase_batch  = int(increase_batch/nu_remote)
     i_episode       = 0
-    max_corr_moves  = int(env.action_space.n/4)
+    max_corr_moves  = int(9)
     curr_batch_len  = 0
     print("","Batch size:", steps, "Increase Rate:", increase_batch, curr_batch_len, "\n\n")
     for uuu in range(0, 500000000+1):
@@ -406,15 +407,16 @@ if __name__ == '__main__':
     # Setup General Params
     state_dim  = env.observation_space.n
     action_dim = env.action_space.n
+    nu_cards   = 32 # number of cards can be on hand, on table, options, in offhand
 
-    print("Model state  dimension:", state_dim, "\nModel action dimension:", action_dim)
+    print("Model state  dimension:", state_dim, "\n\t= 0-31 on_table, 32-63 on_hand, 64-95 played, 96-127 play_options,\n\t= 128-145 Addstates =[would_win, is free of trump, color(EGHZ) free] 6x3\n\t 146-150 matching 1x4, 151-160 decl_options 1x10, 161 self.active_player", "\nModel action dimension:", action_dim, "\n\t 42: 1-32 index of cards, weg, ruf_E, ruf_G, ruf_S, wenz, geier, solo_E, solo_G, solo_H, solo_S")
 
     train_path     = "/home/markus/Documents/06_Software_Projects/gym_schafkopf/01_Tutorials/05_ImprovePretrained/pretrained.pth"
     nu_latent       = 128
     gamma           = 0.99
     K               = 16     #5
     increase_batch  = 100    # value is multipled with 10=nu_remote!! increase batch size every update step! (instead of lowering lr)
-    train_from_start= False
+    train_from_start= True
 
     if train_from_start:
         print("train from start")
@@ -422,7 +424,7 @@ if __name__ == '__main__':
         lr  = 0.01
         update_timestep = 30000
         eps_decay       = int(8000000/update_timestep) # is not used!
-        ppo = PPO(state_dim, action_dim, nu_latent, lr, (0.9, 0.999), gamma, K, eps)
+        ppo = PPO(state_dim, action_dim, nu_cards, nu_latent, lr, (0.9, 0.999), gamma, K, eps)
 
     else:
         # setup learn further:

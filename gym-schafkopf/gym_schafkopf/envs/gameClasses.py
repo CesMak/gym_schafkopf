@@ -250,7 +250,7 @@ class game(metaclass=abc.ABCMeta):
         print("State for", self.player_names[cp])
         for i,j in zip([on_table, on_hand, played, play_options], ["on_table", "on_hand", "played", "options"]):
              #print(j, i, self.state2Cards(i))
-             print("\t", j, self.state2Cards(i))
+             print("\t", j, len(i),self.state2Cards(i))
 
         # print the matching
         print("\t", "partners:", self.player_names[cp]+"_"+str(cp)+"(you) play with "+self.getPartners(cp, matching))
@@ -260,7 +260,11 @@ class game(metaclass=abc.ABCMeta):
         for j,play_list in enumerate(splited_list):
             print("\t","Add_state for ", self.player_names[enemy_tmp[j]])
             print("\t \t"," would_win", play_list[0], "is free of trump", play_list[5], "color(EGHZ) free", play_list[1:5])
-        print("\t","Declaration options", decl_opts)
+        decl_names = []
+        for j, i in enumerate(decl_opts):
+            if i==1:
+                decl_names.append(self.convertIndex2Decl(j+32))
+        print("\t","Declaration options", decl_names, decl_opts)
 
     def nextGamePlayer(self):
         if self.game_start_player < self.nu_players-1:

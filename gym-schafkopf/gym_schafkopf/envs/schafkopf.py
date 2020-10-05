@@ -161,6 +161,10 @@ class schafkopf(game):
     def convertIndex2Decl(self, index):
         return self.decl_options[index-32]
 
+    def convertIndex2DeclFixed(self, index):
+        fixed  = ["weg", "ruf_E", "ruf_G", "ruf_S", "wenz", "geier", "solo_E", "solo_G", "solo_H", "solo_S"]
+        return fixed[index-32]
+
     def assignRewards(self):
         for i, player in enumerate(self.players):
             self.rewards[i] = self.countResult(player.offhand)

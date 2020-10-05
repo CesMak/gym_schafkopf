@@ -331,15 +331,13 @@ class gameLogic(unittest.TestCase):
         env = gym.make("Schafkopf-v1", options={"names": ["Max", "Lea", "Jo", "Tim"], "type": ["RL", "RL", "RL", "RL"], "nu_cards": 8, "active_player": 3, "seed": 67, "colors": ['E', 'G', 'H', 'S'], "value_conversion": {1: "7", 2: "8", 3: "9", 4: "U", 5: "O", 6: "K", 7: "X", 8: "A"}})
         state = env.reset()
         print("len-state:", len(state))
-        print(state)
-
 
         env.my_game.printHands()
         print("")
 
         env.my_game.printCurrentState(state)
 
-    @unittest.skip("demonstrating skipping")
+    #unittest.skip("demonstrating skipping")
     def test_playUntilAI(self):
         import gym
         import gym_schafkopf
@@ -349,16 +347,16 @@ class gameLogic(unittest.TestCase):
         # env.test_game.printCurrentState(state)
 
         #now Lea has to play:
-        for i in [32, 17, 11, 12, 15, 31, 18, 26, 25]:
+        for i in [32, 17, 11, 12, 15, 31, 18, 26, 17]:
             env.stepRandomPlay_Env(i, True)
 
-        # play next game?!
-        state = env.resetRandomPlay_Env(print__=True)
-        for i in [32, 31, 11, 12, 15, 18, 26, 25, 17]:
-            env.stepRandomPlay_Env(i, True)
-
-        # assert total rewards after second game:
-        assert (env.test_game.total_rewards[1] == 10)
+        # # play next game?!
+        # state = env.resetRandomPlay_Env(print__=True)
+        # for i in [32, 31, 11, 12, 15, 18, 26, 25, 17]:
+        #     env.stepRandomPlay_Env(i, True)
+        #
+        # # assert total rewards after second game:
+        # assert (env.test_game.total_rewards[1] == 25)
 
     @unittest.skip("demonstrating skipping")
     def test_ramsch(self):
@@ -477,6 +475,7 @@ class gameLogic(unittest.TestCase):
             print(test_game.current_round, test_game.player_names[cp], test_game.player_types[cp], card, len(test_game.players[cp].hand), test_game.players[cp].colorFree, test_game.players[cp].trumpFree)
             rewards, round_finished, gameOver = test_game.step(test_game.idx2Hand(i, cp), print_=True)
 
+    @unittest.skip("demonstrating skipping")
     def test_generate_quizz1(self):
         import gym
         import gym_schafkopf
