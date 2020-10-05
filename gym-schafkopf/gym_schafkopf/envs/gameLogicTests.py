@@ -1,9 +1,11 @@
 import unittest
 from schafkopf import schafkopf
 import numpy as np
-
+import random
+import json
 
 opts_rnd   = {"names": ["Max", "Lea", "Jo", "Tim"], "type": ["RANDOM", "RANDOM", "RANDOM", "RANDOM"], "nu_cards": 8, "active_player": 3, "seed": None, "colors": ['E', 'G', 'H', 'S'], "value_conversion": {1: "7", 2: "8", 3: "9", 4: "U", 5: "O", 6: "K", 7: "X", 8: "A"}}
+opts_RL    = {"names": ["Max", "Lea", "Jo", "Tim"], "type": ["RL", "RL", "RL", "RL"], "nu_cards": 8, "active_player": 3, "seed": None, "colors": ['E', 'G', 'H', 'S'], "value_conversion": {1: "7", 2: "8", 3: "9", 4: "U", 5: "O", 6: "K", 7: "X", 8: "A"}}
 
 class gameLogic(unittest.TestCase):
     def setUp(self):
@@ -427,6 +429,7 @@ class gameLogic(unittest.TestCase):
         print(env.test_game.matching)
         assert env.test_game.rewards[3] == -90
 
+    @unittest.skip("demonstrating skipping")
     def test_solo_wenz(self):
         import gym
         import gym_schafkopf
@@ -441,6 +444,86 @@ class gameLogic(unittest.TestCase):
             env.stepRandomPlay_Env(i, True)
         print(env.test_game.matching)
         assert env.test_game.rewards[1] == 30
+
+    @unittest.skip("demonstrating skipping")
+    def test_davon_spielen(self): # weglaufen
+        # lea sollte 4 grüne haben mit dem ass
+        import gym
+        import gym_schafkopf
+        # for seeeede in range(20,2000):
+        #     env = gym.make("Schafkopf-v1", seed=seeeede)
+        #     state = env.resetRandomPlay_Env(print__=False)
+        #     allowed_decl = env.test_game.getBinaryDeclarations(env.test_game.active_player)
+        #
+        #     cards_lea   = env.test_game.players[1].hand
+        #     green_cards = env.test_game.getColoredCards([cards_lea], "G")
+        #     has_GA      = env.test_game.hasSpecificCard("A", "G", [green_cards], doConversion=True)
+        #     if len(green_cards)>3 and has_GA:
+        #         print(seeeede)
+        #         break
+
+        test_game = self.initGame(opts_RL, seed=68)
+        test_game.declarations = ["weg", "weg", "weg", "ruf_G"]
+        print(test_game.getHighestDeclaration(test_game.declarations))
+        test_game.setDeclaration(test_game.declarations)
+        print(test_game.matching, test_game.phase)
+
+        for i in [26,11,24,25, 10, 28, 9, 16]:
+            cp = test_game.active_player
+            # test_game.getRandomValidOption() # this is relevant!!!!!!!!! otherwise trumpFree and colorFree is not validated!
+            # print(test_game.current_round, test_game.player_names[current_player], test_game.player_types[current_player], card, len(test_game.players[current_player].hand), test_game.players[current_player].colorFree, test_game.players[current_player].trumpFree)
+            hand_idx = test_game.idx2Hand(i, cp)
+            card = test_game.players[cp].hand[hand_idx]
+            print(test_game.current_round, test_game.player_names[cp], test_game.player_types[cp], card, len(test_game.players[cp].hand), test_game.players[cp].colorFree, test_game.players[cp].trumpFree)
+            rewards, round_finished, gameOver = test_game.step(test_game.idx2Hand(i, cp), print_=True)
+
+    def test_generate_quizz1(self):
+        import gym
+        import gym_schafkopf
+        final_dict = {}
+        for j in range(1000):
+            test_game = self.initGame(opts_RL, seed=None)
+            trumps       = ["solo_H", "solo_H", "solo_H", "solo_E", "solo_G", "solo_S"]
+            trump        = trumps[random.randrange(len(trumps)-1)]
+            test_game.declarations = ["weg", "weg", "weg", trump]
+            test_game.setDeclaration(test_game.declarations)
+
+            names        = ["James", "Alicia", "Lily", "Albus", "Poppy", "Antioch", "Ernie", "Bob", "Draco", "Mafalda", "Igor", "Viktor", "Alecto", "Fleur", "Ariana", "Petunia", "Cho", "Colin", "Dirk", "Barty", "Amelia", "Susan", "Frank", "Ludo", "Phineas", "Ginny", "Neville", "Nigellius", "Boot", "Bryce", "Bilius", "Jean", "Lucius", "Percival", "Rubius", "Molly", "Sirius", "Severus", "Luna"]
+            dict_names   = []
+            all_cards    = []
+            random_cards = []
+            for i in test_game.players:
+                all_cards.extend(i.hand)
+            for i in range(4):
+                tmp = random.randrange(len(all_cards)-1)
+                uuu = all_cards.pop(tmp)
+                random_cards.append(uuu)
+
+                tmp_names = random.randrange(len(names)-1)
+                vvv = names.pop(tmp_names)
+                dict_names.append(vvv)
+            winning_card, on_table_win_idx, player_win_idx = test_game.evaluateWinner(random_cards)
+            result = test_game.countResult([random_cards])
+
+            # convert cards O of H_20 --> HO
+            cards_ = []
+            for i in random_cards:
+                tmp = str(i).replace(" of ", "").split("_")[0]
+                tmp = tmp[1]+tmp[0]
+                cards_.append(tmp)
+            final_dict[j] = {"cards": cards_, "names": dict_names, "winner_idx": on_table_win_idx, "points": result, "trump": test_game.matching["trump"]}
+        with open('quizz_1.json', 'w') as fp:
+            json.dump(final_dict, fp)
+        #final_dict = {"1": {"cards": ["EA"], "owners": ["markus"], "winner_idx": 0, "points": 10}}
+
+        # if print_: print("\t Winner:"+self.player_names[player_win_idx]+" with "+str(winning_card)+" sits on "+str(on_table_win_idx)+" at the table"  )
+        # trick_rewards[player_win_idx] = self.countResult([self.on_table_cards])
+                    # <div class="playingCards schafkopf input-group">
+                    #   <form>  <fieldset>  <legend>markus</legend>   <span class="deck-1 card HK" title="Herz König"></span> </fieldset>  </form>
+                    #   <form>  <fieldset>  <legend>markus</legend>   <span class="deck-1 card HK" title="Herz König"></span> </fieldset>  </form>
+                    #   <form>  <fieldset>  <legend>markus</legend>   <span class="deck-1 card HK" title="Herz König"></span> </fieldset>  </form>
+                    #   <form>  <fieldset>  <legend>markus</legend>   <span class="deck-1 card HK" title="Herz König"></span> </fieldset>  </form>
+                    # </div>
 
 if __name__ == '__main__':
     unittest.main()

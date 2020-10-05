@@ -34,7 +34,7 @@ class schafkopf(game):
         self.active_player     = self.nextGamePlayer()
         self.correct_moves     = 0
         self.phase             = "declaration"
-        self.matching          = {}
+        self.matching          = {"type": "ruf_G", "partner": 0}
         self.declarations      = []
         for i in range (self.nu_players):
             self.declarations.append("")
@@ -81,14 +81,26 @@ class schafkopf(game):
         return False
 
     def getHighestDeclaration(self, declarations):
-        # simplify declarations
+        # CAUTION input self.declarations here! it is reordered to function correctly in the following (worked since 30.09.2020)
+        # the one who is at the first place should have the first declaration!
+        # e.g. self.declarations = solo_E, solo_H, weg, solo_G
+
+        # 3 0 1 2
+        gsp              = self.game_start_player
+        new_sorted_list  = [gsp, self.getNextPlayerIdx(gsp), self.getNextPlayerIdx(self.getNextPlayerIdx(gsp)), self.getNextPlayerIdx(self.getNextPlayerIdx(self.getNextPlayerIdx(gsp)))]
+
+        correctly_sorted_declarations = []
+        for i in new_sorted_list:
+            correctly_sorted_declarations.append(declarations[i])  # solo_G, solo_E, solo_H, weg
+
         highest = "weg"
         idx     = 0
-        for i, decl in enumerate(declarations):
+        for i, decl in enumerate(correctly_sorted_declarations):
             if self.getWinningDeclaration(highest, decl):
-                highest = decl
+                highest = decl #solo_G
                 idx     = i
-        return highest, idx
+        #print("\n\n", gsp, new_sorted_list, correctly_sorted_declarations, "highest:   ", new_sorted_list[idx])
+        return highest, new_sorted_list[idx]
 
     def getPossDeclarations(self, cards):
         declarations = []
@@ -127,9 +139,9 @@ class schafkopf(game):
         if "ruf" in self.matching["type"] or "hochzeit" in self.matching["type"] or "ramsch" in self.matching["type"] or "solo" in self.matching["type"]:
             trick_order = self.setTrickOrderByGame(trump=trump, lead_color=lead_color)
         elif "geier" in self.matching["type"]:
-            trick_order = self.setTrickOrderByGame(trump=trump, lead_color=lead_color, ll1=["O"], ll2=["A", "X", "K", "U", "9", "8", "7"])
+            trick_order = self.setTrickOrderByGame(trump="", lead_color=lead_color, ll1=["O"], ll2=["A", "X", "K", "U", "9", "8", "7"])
         elif "wenz" in self.matching["type"]:
-            trick_order = self.setTrickOrderByGame(trump=trump, lead_color=lead_color, ll1=["U"], ll2=["A", "X", "K", "O", "9", "8", "7"])
+            trick_order = self.setTrickOrderByGame(trump="", lead_color=lead_color, ll1=["U"], ll2=["A", "X", "K", "O", "9", "8", "7"])
         self.matching["order"] = list(reversed(trick_order))
 
     def convertDecl2Index(self, decl):
@@ -219,7 +231,7 @@ class schafkopf(game):
                 if idx_order == m:
                     counter +=1
             if counter_before == counter:
-                return counter
+                break
         #TODO eichel ass kann auch laufende sein???! mit diesr Implementierung!
         if ("ruf" in self.matching["type"] or "solo" in self.matching["type"]) and counter>8:
             counter = 8
@@ -267,7 +279,7 @@ class schafkopf(game):
                             break
         return declarations
 
-    def getWenzGeierDeclaration(self, type, cards):
+    def getWenzGeierDeclaration(self, input_type, cards):
         result = []
         tmp    = []
         for type in self.decl_options:
@@ -276,7 +288,7 @@ class schafkopf(game):
             elif type =="wenz":
                 tmp = self.getAnyCards(cards, colors=["E", "G", "H", "S"], values=["U"])
             if len(tmp)>0:
-                result = [type]
+                result = [input_type]
                 break
         return result
 
@@ -357,7 +369,7 @@ class schafkopf(game):
                     options.append(i)
             else:
                 if incolor == "trump":
-                    trumps = self.getTrumps([cards])
+                    trumps = self.getTrumps([cards], trump_color=self.matching["trump"])
                     #print("in trump,", trumps, player, incolor, cards)
                     if len(trumps) == 0:
                         options = list(range(len(cards)))
@@ -553,9 +565,27 @@ class schafkopf(game):
         if ruf_points>60:
             ruf_wins = 1
 
+        team_points = [0]*4
+        team_state  = ["Schneider frei"]*4 # Schneider, Schwarz
+        for j in range(4):
+            for m in players_ruf:
+                if m==j:
+                    team_points[j] = ruf_points
+                    if   ruf_points==0: team_state[j] = "Schwarz"
+                    elif ruf_points<30: team_state[j] = "Schneider"
+                    elif ruf_points>=30: team_state[j] = "Schneider frei"
+            for l in enemys:
+                if l==j:
+                    enemy_points   = 120-ruf_points
+                    team_points[j] = enemy_points
+                    if   enemy_points==0: team_state[j] = "Schwarz"
+                    elif enemy_points<30: team_state[j] = "Schneider"
+                    elif enemy_points>=30: team_state[j] = "Schneider frei"
+
         self.matching["spieler_names"]  = ruf_names
-        self.matching["spieler_points"] = ruf_points
+        self.matching["team_points"]    = ','.join([str(elem) for elem in team_points])
         self.matching["spieler_wins"]   = ruf_wins
+        self.matching["team_state"]     = team_state
 
         # get costs of this game:
         if ruf_wins:
@@ -565,11 +595,9 @@ class schafkopf(game):
 
         if tmp>90:
             money+=5
-            self.matching["schneider"] = True
         if tmp==120:  ### TODO wenn null stich ist nicht SCHWARZ!!!!
             #players_ruf offhand stiche muessen 8 sein
             money+=5
-            self.matching["schwarz"]   = True
 
         # TODO assign ober etc.
         if "geier" in self.matching["type"] or "wenz" in self.matching["type"]:
