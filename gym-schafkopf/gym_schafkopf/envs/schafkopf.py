@@ -36,7 +36,7 @@ class schafkopf(game):
         self.phase             = "declaration"
         self.matching          = {"type": "ruf_G", "partner": 0}
         self.declarations      = []
-        for i in range (self.nu_players):
+        for i in range(self.nu_players):
             self.declarations.append("")
 
     def sortCards(self, inputCards):
@@ -479,6 +479,30 @@ class schafkopf(game):
                 return rewards, round_finished, gameOver
         return rewards, True, True
 
+    def playUntilEnd(self, print_=False):
+        rewards        = {"state": "play_or_shift", "ai_reward": None}
+        gameOver       = False
+        round_finished = False
+        while len(self.players[self.active_player].hand) > 0:
+            cp = self.active_player
+            ai_action            = self.getRandomValidOption()
+            if self.phase=="declaration":
+                if print_:  print(self.player_names[cp], self.player_types[cp], cp,"trys to declare....", self.convertIndex2Decl(ai_action))
+                rewards, round_finished, gameOver = self.step(ai_action, print_)
+                if print_:
+                    print("\t "+self.player_names[cp]+": "+self.declarations[cp])
+                    if self.DeclarationFinished():
+                        print("\t Highest Declaration: "+str(self.getHighestDeclaration(self.declarations)))
+                        print("\t Matching           : ", str(self.matching)[0:60],"\n")
+            elif self.phase == "playing":
+                card              = self.idx2Card(ai_action)
+                if print_: print(self.current_round, str(cp)+"-"+self.player_names[cp]+"\t"+self.player_types[cp]+"\tplays", card)
+                rewards, round_finished, gameOver = self.step(self.idx2Hand(ai_action, cp), print_)
+
+            if print_ and round_finished:
+                print("")
+        return rewards, True, True
+
     def step(self, action_idx, print_=False):
         #Note that card_idx is a Hand Card IDX or a declaration index = 32,....
         # it is not card.idx unique number!
@@ -543,6 +567,30 @@ class schafkopf(game):
                             result += value
                             break
         return result
+
+    def getGameState(self):
+        return {"players": self.players, "matching": self.matching, "cp": self.active_player, "phase": self.phase, "declarations": self.declarations, "rewards": self.rewards, "gameOver": self.gameOver, "on_table_cards": self.on_table_cards, "played_cards": self.played_cards }
+
+    def setGameState(self, gameStateObj, handCards={}):
+        # if lenHandCards>0 hands is used!
+        self.players  = gameStateObj["players"]
+        self.matching = gameStateObj["matching"]
+        self.active_player  = gameStateObj["cp"]
+        self.phase = gameStateObj["phase"]
+        self.declarations  = gameStateObj["declarations"]
+        self.rewards = gameStateObj["rewards"]
+        self.gameOver = gameStateObj["gameOver"]
+        self.on_table_cards = gameStateObj["on_table_cards"]
+        self.played_cards = gameStateObj["played_cards"]
+
+        for key, value in handCards.items():
+            if type(key) == int:
+                result = []
+                for card in self.idxList2Cards(value):
+                    if len(card.player)<1:
+                        card.player = str(self.player_names[key])
+                        result.append(card)
+                self.players[key].hand = result
 
     def evaluateGame(self, type, print_):
         type=type.split("_")[0]
@@ -732,6 +780,17 @@ class schafkopf(game):
                 options_list[idx] = 1.0
         return options_list
 
+    def getOptionsList(self):
+        result_list  = []
+        if self.phase =="declaration":
+            decl_opts     = self.getBinaryDeclarations(self.active_player)
+            for j, i in enumerate(decl_opts):
+                if i==1:
+                    result_list.append(j+32)
+        else:
+            result_list        = self.cards2Idx(self.getValidOptions(self.on_table_cards, self.active_player))
+        return result_list
+
     def getMatchingBinary(self, playeridx):
         matching = [0.0]*self.nu_players
         if not "spieler" in self.matching:
@@ -824,7 +883,7 @@ class schafkopf(game):
                 if print_: print(self.player_names[cp], self.player_types[cp], " played wrong ai_action", ai_action, "for phase", self.phase)
                 return {"state": "play_or_shift", "ai_reward": None}, False, True
         else:
-            print("I am not an RL PlAYER..... ERROR")
+            #print("I am not an RL PlAYER..... ERROR")
             return {"state": "play_or_shift", "ai_reward": None}, False, True # rewards round_finished, game_over
 
 
@@ -859,18 +918,13 @@ class schafkopf(game):
 
 
 
-
-
-
-
-
-
 ######
 ####  currently not used functions:::
 ####
     def getRandomPossCards(self, list, nuCards):
         #random.seed(None)
         result = []
+        #print(list, nuCards)
         for i in range(nuCards):
             tmp = random.randrange(len(list))
             result.append(list[tmp])
@@ -920,9 +974,11 @@ class schafkopf(game):
         for i in enemys_sorted:
             enemy      = self.players[i]
             play_idxs = tmp_cards
-            for n, m in enumerate(["B", "G", "R", "Y"]):
-                if enemy.colorFree[n]>=1.0:
-                    play_idxs = self.removeColor(play_idxs, m)
+            # print(len(play_idxs))
+            # for n, m in enumerate(["B", "G", "R", "Y"]):
+            #     if enemy.colorFree[n]>=1.0:
+            #         play_idxs = self.removeColor(play_idxs, m)
+            # print(len(play_idxs))
             cards = self.getRandomPossCards(play_idxs, len(enemy.hand))
             tmp_cards = self.removeList(tmp_cards, cards)
             result[i] = cards

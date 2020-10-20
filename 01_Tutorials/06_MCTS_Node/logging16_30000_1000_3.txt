@@ -1,0 +1,32 @@
+Game ,0030000, mean_rew of 2303 finished g. ,1.1463, of random ,-0.36474, corr_moves[max: 9] ,6.123, mean_rew ,-5.39e+02,   0:00:31.961884,playing t=9.94, lr=0.005, batch=29932
+Game ,0093000, mean_rew of 3178 finished g. ,0.72058, of random ,-0.2297, corr_moves[max: 9] ,6.83, mean_rew ,-3.64e+02,   0:01:21.713762,playing t=11.1, lr=0.005, batch=62769
+Game ,0160000, mean_rew of 3750 finished g. ,-0.12267, of random ,0.047111, corr_moves[max: 9] ,7.446, mean_rew ,-2.5e+02,   0:02:16.406398,playing t=13.01, lr=0.005, batch=66785
+Game ,0231000, mean_rew of 4171 finished g. ,3.2966, of random ,-1.0733, corr_moves[max: 9] , 7.9, mean_rew ,-1.63e+02,   0:03:14.277315,playing t=13.64, lr=0.005, batch=70656
+Game ,0306000, mean_rew of 4487 finished g. ,1.9679, of random ,-0.65077, corr_moves[max: 9] ,8.318, mean_rew ,-1.01e+02,   0:04:15.965077,playing t=14.66, lr=0.005, batch=74647
+Game ,0385000, mean_rew of 4718 finished g. ,2.518, of random ,-0.85418, corr_moves[max: 9] ,8.616, mean_rew ,-54.0,   0:05:19.945370,playing t=15.61, lr=0.005, batch=78681
+Game ,0468000, mean_rew of 4807 finished g. ,3.6197, of random ,-1.2107, corr_moves[max: 9] ,8.733, mean_rew ,-35.1,   0:06:27.732269,playing t=16.72, lr=0.005, batch=82620
+Game ,0555000, mean_rew of 4845 finished g. ,6.3333, of random ,-2.087, corr_moves[max: 9] , 8.8, mean_rew ,-24.9,   0:07:37.791574,playing t=17.76, lr=0.005, batch=86670
+Game ,0646000, mean_rew of 4871 finished g. ,9.4775, of random ,-3.1421, corr_moves[max: 9] ,8.837, mean_rew ,-16.6,   0:08:50.406025,playing t=18.82, lr=0.005, batch=90690
+Game ,0741000, mean_rew of 4904 finished g. ,10.72, of random ,-3.5597, corr_moves[max: 9] ,8.875, mean_rew ,-8.69,   0:10:05.889403,playing t=19.9, lr=0.005, batch=94700
+Game ,0840000, mean_rew of 4900 finished g. ,12.381, of random ,-4.1037, corr_moves[max: 9] ,8.887, mean_rew ,-7.87,   0:11:25.466269,playing t=21.1, lr=0.005, batch=98731
+Game ,0943000, mean_rew of 4882 finished g. ,15.862, of random ,-5.2875, corr_moves[max: 9] ,8.861, mean_rew ,-8.11,   0:12:48.395979,playing t=22.76, lr=0.005, batch=102673
+Game ,1050000, mean_rew of 4892 finished g. ,17.029, of random ,-5.664, corr_moves[max: 9] ,8.87, mean_rew ,-4.94,   0:14:16.721329,playing t=24.45, lr=0.005, batch=106603
+Game ,1161000, mean_rew of 4904 finished g. ,19.041, of random ,-6.3523, corr_moves[max: 9] ,8.889, mean_rew ,-0.525,   0:15:48.409217,playing t=25.82, lr=0.005, batch=110545
+Game ,1276000, mean_rew of 4927 finished g. ,20.416, of random ,-6.7627, corr_moves[max: 9] ,8.918, mean_rew ,5.52,   0:17:20.230932,playing t=26.02, lr=0.005, batch=114685
+Game ,1395000, mean_rew of 4921 finished g. ,20.737, of random ,-6.9163, corr_moves[max: 9] ,8.912, mean_rew ,4.61,   0:18:54.367886,playing t=27.4, lr=0.005, batch=118696
+Game ,1518000, mean_rew of 4924 finished g. ,21.029, of random ,-7.0116, corr_moves[max: 9] ,8.921, mean_rew ,5.51,   0:20:31.580600,playing t=28.3, lr=0.005, batch=122563
+Game ,1645000, mean_rew of 4934 finished g. ,21.53, of random ,-7.1646, corr_moves[max: 9] ,8.931, mean_rew ,8.05,   0:22:11.068507,playing t=29.39, lr=0.005, batch=126600
+Game ,1776000, mean_rew of 4950 finished g. ,20.984, of random ,-6.9434, corr_moves[max: 9] ,8.944, mean_rew ,10.8,   0:23:52.823544,playing t=29.57, lr=0.005, batch=130725
+Game ,1911000, mean_rew of 4935 finished g. ,21.694, of random ,-7.2009, corr_moves[max: 9] ,8.929, mean_rew ,8.41,   0:25:36.895236,playing t=30.69, lr=0.005, batch=134563
+Game ,2050000, mean_rew of 4932 finished g. ,21.902, of random ,-7.2932, corr_moves[max: 9] ,8.924, mean_rew ,8.0,   0:27:22.193370,playing t=30.81, lr=0.005, batch=138600
+Game ,2193000, mean_rew of 4935 finished g. ,21.938, of random ,-7.2432, corr_moves[max: 9] ,8.934, mean_rew ,8.65,   0:29:09.417462,playing t=31.39, lr=0.005, batch=142645
+Game ,2340000, mean_rew of 4934 finished g. ,22.817, of random ,-7.5422, corr_moves[max: 9] ,8.933, mean_rew ,9.32,   0:30:59.568359,playing t=33.26, lr=0.005, batch=146690
+Game ,2491000, mean_rew of 4933 finished g. ,22.607, of random ,-7.5032, corr_moves[max: 9] ,8.925, mean_rew ,8.9,   0:32:50.100608,playing t=32.8, lr=0.005, batch=150494
+Game ,2646000, mean_rew of 4928 finished g. ,22.697, of random ,-7.5291, corr_moves[max: 9] ,8.925, mean_rew ,7.97,   0:34:42.871750,playing t=34.06, lr=0.005, batch=154650
+Game ,2805000, mean_rew of 4939 finished g. ,22.95, of random ,-7.5791, corr_moves[max: 9] ,8.933, mean_rew ,10.5,   0:36:37.630857,playing t=34.56, lr=0.005, batch=158645
+Game ,2968000, mean_rew of 4932 finished g. ,23.544, of random ,-7.8035, corr_moves[max: 9] ,8.93, mean_rew ,9.62,   0:38:34.284391,playing t=34.61, lr=0.005, batch=162654
+Game ,3135000, mean_rew of 4935 finished g. ,22.647, of random ,-7.5768, corr_moves[max: 9] ,8.937, mean_rew ,9.35,   0:40:32.536520,playing t=35.19, lr=0.005, batch=166605
+Game ,3306000, mean_rew of 4945 finished g. ,23.169, of random ,-7.6758, corr_moves[max: 9] ,8.934, mean_rew ,11.9,   0:42:32.167549,playing t=35.7, lr=0.005, batch=170616
+Game ,3481000, mean_rew of 4939 finished g. ,22.862, of random ,-7.5923, corr_moves[max: 9] ,8.94, mean_rew ,10.4,   0:44:33.783634,playing t=36.65, lr=0.005, batch=174655
+Game ,3660000, mean_rew of 4947 finished g. ,23.108, of random ,-7.6535, corr_moves[max: 9] ,8.945, mean_rew ,12.3,   0:46:35.791267,playing t=36.61, lr=0.005, batch=178648
+Game ,3843000, mean_rew of 4942 finished g. ,22.701, of random ,-7.5583, corr_moves[max: 9] ,8.938, mean_rew ,10.8,   0:48:40.812502,playing t=37.6, lr=0.005, batch=182692

@@ -337,7 +337,7 @@ class gameLogic(unittest.TestCase):
 
         env.my_game.printCurrentState(state)
 
-    #unittest.skip("demonstrating skipping")
+    @unittest.skip("demonstrating skipping")
     def test_playUntilAI(self):
         import gym
         import gym_schafkopf
@@ -412,6 +412,65 @@ class gameLogic(unittest.TestCase):
         assert env.test_game.rewards[3] == -75
 
     @unittest.skip("demonstrating skipping")
+    def test_rufSpiel_1(self):
+        import gym
+        import gym_schafkopf# ruf declarations hightest seeds [59, 75, 76, 96, 97, 120, 123, 150, 162, 170, 185]
+        env = gym.make("Schafkopf-v1", seed=59)
+        state = env.resetRandomPlay_Env(print__=True)
+
+        for i in [32]:
+            env.stepRandomPlay_Env(i, True)
+
+        #now Lea has to play:
+        for i in [18, 12, 15, 26, 23, 22, 19, 21]:
+            env.stepRandomPlay_Env(i, True)
+        print(env.test_game.matching)
+
+        # 0 = Max, 1=Lea, 2=Jo, 3=Tim
+        # Max ruft mit Schelle den Jo beide verlieren
+        # [-5, 5, -5, 5]
+        assert env.test_game.matching["money"] == -5
+
+    @unittest.skip("demonstrating skipping")
+    def test_rufSpiel_1(self):
+        import gym
+        import gym_schafkopf# ruf declarations hightest seeds [59, 75, 76, 96, 97, 120, 123, 150, 162, 170, 185]
+        env = gym.make("Schafkopf-v1", seed=59)
+        state = env.resetRandomPlay_Env(print__=True)
+
+        for i in [32]:
+            env.stepRandomPlay_Env(i, True)
+
+        #now Lea has to play:
+        for i in [18, 12, 15, 26, 23, 22, 19, 21]:
+            env.stepRandomPlay_Env(i, True)
+        print(env.test_game.matching)
+
+        # 0 = Max, 1=Lea, 2=Jo, 3=Tim
+        # Max ruft mit Schelle den Jo beide verlieren
+        # [-5, 5, -5, 5]
+        assert env.test_game.matching["money"] == -5
+
+    @unittest.skip("demonstrating skipping")
+    def test_rufSpiel_2(self):
+        import gym
+        import gym_schafkopf# ruf declarations hightest seeds [59, 75, 76, 96, 97, 120, 123, 150, 162, 170, 185]
+        env = gym.make("Schafkopf-v1", seed=75)
+        state = env.resetRandomPlay_Env(print__=True)
+
+        for i in [32]:
+            env.stepRandomPlay_Env(i, True)
+
+        #now Lea has to play:
+        for i in [21, 15, 3, 26, 2, 8, 11, 10]:
+            env.stepRandomPlay_Env(i, True)
+        print(env.test_game.matching)
+
+        # 0 = Max, 1=Lea, 2=Jo, 3=Tim
+        # Max ruft Lea
+        # [-5, 5, -5, 5]
+
+    #@unittest.skip("demonstrating skipping")
     def test_solo_geier_first(self):
         import gym
         import gym_schafkopf
@@ -468,7 +527,7 @@ class gameLogic(unittest.TestCase):
 
         for i in [26,11,24,25, 10, 28, 9, 16]:
             cp = test_game.active_player
-            # test_game.getRandomValidOption() # this is relevant!!!!!!!!! otherwise trumpFree and colorFree is not validated!
+            test_game.getRandomValidOption() # this is relevant!!!!!!!!! otherwise trumpFree and colorFree is not validated!
             # print(test_game.current_round, test_game.player_names[current_player], test_game.player_types[current_player], card, len(test_game.players[current_player].hand), test_game.players[current_player].colorFree, test_game.players[current_player].trumpFree)
             hand_idx = test_game.idx2Hand(i, cp)
             card = test_game.players[cp].hand[hand_idx]

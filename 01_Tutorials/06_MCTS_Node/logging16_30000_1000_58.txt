@@ -1,0 +1,2 @@
+Game ,0030000, mean_rew of 4218 finished g. ,1.0894, of random ,-0.3568, corr_moves[max: 9] ,7.981, mean_rew ,-1.55e+02,   0:00:27.799346,playing t=4.99, lr=0.001, batch=29931
+Game ,0093000, mean_rew of 4461 finished g. ,0.87536, of random ,-0.29777, corr_moves[max: 9] ,8.27, mean_rew ,-1.07e+02,   0:01:21.622992,playing t=12.2, lr=0.001, batch=62692
