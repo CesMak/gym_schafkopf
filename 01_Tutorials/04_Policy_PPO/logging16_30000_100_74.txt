@@ -1,2 +1,0 @@
-Game ,0030000, mean_rew of 0 finished g. ,0.0, of random ,0.0, corr_moves[max:10] ,0.3862, mean_rew ,-1e+02,   0:01:21.544411,playing t=51.06, lr=0.01, batch=29924
-Game ,0090300, mean_rew of 0 finished g. ,0.0, of random ,0.0, corr_moves[max:10] ,1.12, mean_rew ,-1e+02,   0:04:13.956435,playing t=60.54, lr=0.01, batch=60166
