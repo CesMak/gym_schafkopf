@@ -80,6 +80,7 @@ def playSteps(env, steps, max_corr):
     result_memory = Memory()
     done          = 0
     state         = env.reset()
+
     for i in range(steps):
         player =  env.my_game.active_player
         action = random.randrange(0, env.action_space.n)    # action hand index card comes in later tutorial from policy!
@@ -136,17 +137,16 @@ if __name__ == '__main__':
 
     print("Number of steps in one game:", max_corr_moves, "\n")
     # functions breaks if done(=invalid move or game finished)
-    memory = playSteps(env, 10, max_corr_moves)
+    memory = playSteps(env, 20, max_corr_moves)
     batch  = memory.batches[0]
 
-    print("\nOne Batch:")
+    print("\nOne Batch contains these arrays")
     print("Actions:", batch.actions)
-    print("State  :", batch.states)
+    print("State  :", batch.states, "size of one state:", len(batch.states[0]))
     print("Rewards:", batch.rewards)
     print("LogProb:", batch.logprobs)
     print("Done   :", batch.is_terminals)
-    print("State:", len(batch.states[0]))
-    print(env.my_game.printCurrentState(batch.states[0]))
+    env.my_game.printCurrentState(batch.states[0])
 
     nu_steps    = 100000
     print("\nBenchmark playing "+str(nu_steps)+" steps")
@@ -154,3 +154,5 @@ if __name__ == '__main__':
     start_time  = datetime.datetime.now()
     memory      = playSteps(env, nu_steps, max_corr_moves)
     print("Took:", datetime.datetime.now()-start_time, "Number of batches: ", len(memory.batches))
+    # Lenovo Z500: 01:08.55
+    # 20VE (LENOVO_MT_20VE_BU_idea_FM_ThinkBook 15 G2 ITL): Took: 0:00:18.289208 Number of batches:  99872

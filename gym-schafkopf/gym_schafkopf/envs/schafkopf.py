@@ -525,8 +525,8 @@ class schafkopf(game):
             player_win_idx   = -1
             if len(self.on_table_cards) == self.nu_players:
                 winning_card, on_table_win_idx, player_win_idx = self.evaluateWinner()
-                if print_: print("\t Winner:"+self.player_names[player_win_idx]+" with "+str(winning_card)+" sits on "+str(on_table_win_idx)+" at the table"  )
                 trick_rewards[player_win_idx] = self.countResult([self.on_table_cards])
+                if print_: print("\t Winner:"+self.player_names[player_win_idx]+" with "+str(winning_card)+" sits on "+str(on_table_win_idx)+" at the table->"+str(trick_rewards[player_win_idx]))
                 self.current_round +=1
                 self.played_cards.extend(self.on_table_cards)
                 self.players[player_win_idx].appendCards(self.on_table_cards)
@@ -673,7 +673,7 @@ class schafkopf(game):
             self.rewards[i] = money*-1
 
         if print_:
-            print("")
+            print("\nGame: "+self.matching["type"]+" by "+self.matching["spieler_names"][0])
             if "ruf" in type:
                 print(self.matching["type"]+": "+ruf_names[0]+" called "+ruf_names[1])
             print("poitns", ruf_points, "--> money: ", money)

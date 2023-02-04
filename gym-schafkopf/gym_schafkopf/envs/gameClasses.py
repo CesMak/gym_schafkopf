@@ -229,9 +229,9 @@ class game(metaclass=abc.ABCMeta):
 
     def splitState(self, state=None):
         if state is None:
-            state = self.getState().flatten().astype(np.int)
+            state = self.getState().flatten().astype(int)
         else:
-            state = state.flatten().astype(np.int)
+            state = state.flatten().astype(int)
         ll    = self.nu_players * self.nu_cards
         #[on_table+ on_hand+ played+ play_options+ add_states+matching+decl_options+[self.active_player]]
         on_table, on_hand, played, play_options= state[0:ll], state[ll:2*ll], state[ll*2:3*ll], state[3*ll:4*ll]

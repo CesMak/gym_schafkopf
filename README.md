@@ -66,6 +66,13 @@ pip3 install -r requirements.txt # the requirements.txt file is in the Tutorials
   * state(150x1)=card_state + add_states+matching+decl_options
 
 **TODO decl_options** ist fuer zustand gar nicht noetig oder?! was soll der damit machen?!
+-> doch sonst weiß man gar nicht was wer gemacht hat? Oder muss man das auch nicht?
+-> teste es aus ob man das nicht weglassen kann!
+
+## Action Space
+* playOptions (cards 32)
+* declarations (ordered) = "weg", "ruf_E", "ruf_G", "ruf_S", "wenz", "geier", "solo_E", "solo_G", "solo_H", "solo_S"
+* action_space = playOptions + declarations = 42
 
 ## Install gym environment
 ```bash
@@ -92,6 +99,10 @@ Simply run the unittests to test the gameLogic of Schafkopf:
 ```bash
 /01_Tutorials/01_GenerateGymData$ python test_gym.py
 ```
+shows how the gym is used:
++ step(actions(0...42))
++ -> returns the rewards
+
 ### 02_GenerateBatches
 
 Generate Data which is used later on to train a policy.
@@ -99,50 +110,46 @@ Generate Data which is used later on to train a policy.
 /01_Tutorials/02_GenerateBatches$ python gen_batches.py
 ```
 
+This example shows how to generate a lot of data that can then be used for offline learning!
+
 ```
 Creating model: Schafkopf-v1
-Model state  dimension: 155
-Model action dimension: 36
-Number of steps in one game: 9
+Model state  dimension: 161 
+Model action dimension: 42
+Number of steps in one game: 10 
 
-Max RL  played wrong ai_action 23 for phase declaration
-	 Reward:  -100 Done: True
-Lea RL  played wrong ai_action 11 for phase declaration
-	 Reward:  -100 Done: True
-Jo RL  played wrong ai_action 4 for phase declaration
-	 Reward:  -100 Done: True
 
 One Batch:
-Actions: [23]
+Actions: [36]
 State  : [array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0,
-       0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0,
+       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0,
+       0, 0, 0, 1, 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0,
        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0,
-       0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1,
-       0])]
-Rewards: [-100]
+       0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0,
+       1, 1, 1, 1, 1, 1, 1])]
+Rewards: [0]
 LogProb: [0.2]
-Done   : [True]
-State: 155
-State for Max
-	 on_table []
-	 on_hand [7 of E_0, U of E_3, K of E_5, A of E_7, 7 of H_16, K of H_21, A of H_23, 9 of S_26]
-	 played []
-	 options []
-	 partners: Max_0(you) play with
-	 Add_state for  Lea
-	 	  would_win 1 is free of trump 0 color(EGHZ) free [0 0 0 0]
-	 Add_state for  Jo
-	 	  would_win 1 is free of trump 0 color(EGHZ) free [0 0 0 0]
-	 Add_state for  Tim
-	 	  would_win 1 is free of trump 0 color(EGHZ) free [0 0 0 0]
-	 Declaration options [1 0 0 1]
+Done   : [False]
+State: 161
+State for Lea
+         on_table 32 []
+         on_hand 32 [u"EA", u"GA", u"H7", u"H9", u"HU", u"HK", u"S7", u"SA"]
+         played 32 []
+         options 32 []
+         partners: Lea_1(you) play with 
+         Add_state for  Max
+                  would_win 1 is free of trump 0 color(EGHZ) free [0 0 0 0]
+         Add_state for  Jo
+                  would_win 1 is free of trump 0 color(EGHZ) free [0 0 0 0]
+         Add_state for  Tim
+                  would_win 1 is free of trump 0 color(EGHZ) free [0 0 0 0]
+         Declaration options ['weg', 'wenz', 'geier', 'solo_E', 'solo_G', 'solo_H', 'solo_S'] [1 0 0 0 1 1 1 1 1 1]
 None
 
 Benchmark playing 100000 steps
-Took: 0:01:08.550217 Number of batches:  99982
+Took: 0:00:19.006270 Number of batches:  19269 ## TODO there are a lot of steps not working?!
 ```
 
 ### 03_Parallel_Batch_Generation
@@ -163,6 +170,10 @@ Took: 0:00:29.501962 Number of batches:  99925
 ```
 
 ### 04_Policy_PPO
+
+The PPO contains the following actor-critic:
+![img](02_Data/ppo_actor_critic.png)
+
 * include training a neuronal network
 * included classes ActorModel, ActorCritic, PPO
 ```bash
@@ -308,7 +319,7 @@ pyreverse -o png gameClasses.py schafkopf.py
  * schafkopf.py: inherits from game
  * gameLogicTests: contains unitTest to test the functionality of the other classes.
 
-![img](classes_overview.png)
+![img](02_Data/classes_overview.png)
 
 ## Changelog
 |Date|Description|commit|

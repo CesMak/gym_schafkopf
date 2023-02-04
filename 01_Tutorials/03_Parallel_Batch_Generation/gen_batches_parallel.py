@@ -94,7 +94,7 @@ def playSteps(env, steps, max_corr):
             batches[player].actions.append(int(action))
             batches[player].logprobs.append(float(0.2)) # value comes in later tutorial from policy!
         else:
-            print("ERROR", state)
+            print("ERROR", type(state[0]), state)
 
         state, rewards, done, _ = env.step(action)
 
@@ -144,4 +144,6 @@ if __name__ == '__main__':
     mem_list = ray.get([playSteps.remote(env, steps, max_corr_moves) for i in range(nu_remote)])
     for i in mem_list:
         memory.append_memo(i)
-    print("Took:", datetime.datetime.now()-start_time, "Number of batches: ", len(memory.batches)) # 20 sec
+    print("Took:", datetime.datetime.now()-start_time, "Number of batches: ", len(memory.batches))
+    #LenovoZ500: 20 sec
+    #Lenovo15G2: Took: 0:00:07.442500 Number of batches:  99791

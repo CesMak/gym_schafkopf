@@ -1,3 +1,4 @@
+# Code see: https://github.com/nikhilbarhate99/PPO-PyTorch
 import gym
 import gym_schafkopf
 
@@ -53,7 +54,7 @@ class Batch(object):
         self.is_terminals.extend(b.is_terminals)
 
     def convert_batch_tensor(self):
-        self.states = torch.Tensor(self.states)
+        self.states = torch.Tensor(np.array(self.states))
         self.actions= torch.Tensor(self.actions)
         self.logprobs = torch.Tensor(self.logprobs)
         #self.states = torch.from_numpy(self.states).float()
@@ -92,6 +93,7 @@ class ActorModel(nn.Module):
         super(ActorModel, self).__init__()
         self.a_dim   = action_dim
         self.number_of_cards = number_of_cards
+        self.decl_opts  = 10
 
         self.ac      = nn.Linear(state_dim, n_latent_var)
         self.ac_prelu= nn.PReLU()
@@ -99,7 +101,7 @@ class ActorModel(nn.Module):
         self.ac1_prelu= nn.PReLU()
 
         # Actor layers:
-        self.a1      = nn.Linear(n_latent_var+number_of_cards, action_dim)
+        self.a1      = nn.Linear(n_latent_var+number_of_cards+self.decl_opts, action_dim)
 
         # Critic layers:
         self.c1      = nn.Linear(n_latent_var, n_latent_var)
@@ -107,13 +109,9 @@ class ActorModel(nn.Module):
         self.c2      = nn.Linear(n_latent_var, 1)
 
     def forward(self, input):
-        # For 4 players each 15 cards on hand:
-        # input=on_table(60)+ on_hand(60)+ played(60)+ play_options(60)+ add_states(15)
-        # add_states = color free (4)+ would win (1) = 5  for each player
-        #input.shape  = 15*4*4=240+3*5 (add_states) = 255
-
-        # Bei Schafkopf: input.shape=161 [on_table+ on_hand+ played+ play_options+ add_states+matching+decl_options+[self.active_player]]
-        #print(input.shape, self.a_dim*3, self.a_dim*4)
+        #@in       input      161x1 input state:  [on_table+ on_hand+ played+ play_options+ add_states+matching+decl_options+[self.active_player]]
+        #@return   actor_out  42x1  action probability [cards, declar_options]
+        #@retrn    critic     1x1   Q-Value (between 0...1)  evaluates how good the current move was?
 
         #Actor and Critic:
         ac = self.ac(input)
@@ -123,10 +121,10 @@ class ActorModel(nn.Module):
 
         # Get Actor Result:
         if len(input.shape)==1:
-            options = input[self.number_of_cards*3:self.number_of_cards*4]
-            actor_out =torch.cat( [ac, options], 0)
+            options = input[self.number_of_cards*3:self.number_of_cards*4+self.decl_opts]
+            actor_out =torch.cat( [ac, options], 0) #170x1  (128+42)
         else:
-            options = input[:, self.number_of_cards*3:self.number_of_cards*4]
+            options = input[:, self.number_of_cards*3:self.number_of_cards*4+self.decl_opts]
             actor_out   = torch.cat( [ac, options], 1)
         actor_out = self.a1(actor_out)
         actor_out = actor_out.softmax(dim=-1)
@@ -141,8 +139,8 @@ class ActorModel(nn.Module):
 class ActorCritic(nn.Module):
     def __init__(self, state_dim, action_dim, number_of_cards, n_latent_var):
         super(ActorCritic, self).__init__()
-        self.a_dim   = action_dim
-        self.number_of_cards = number_of_cards
+        self.a_dim   = action_dim                   #32+10 = 42 actions (each card and decl options)
+        self.number_of_cards = number_of_cards      #32
 
         # actor critic
         self.actor_critic = ActorModel(state_dim, action_dim, number_of_cards, n_latent_var)
@@ -152,7 +150,7 @@ class ActorCritic(nn.Module):
             state = torch.from_numpy(state).float()
         action_probs, _ = self.actor_critic(state)
         # here make a filter for only possible actions!
-        #action_probs = action_probs *state[self.a_dim*3:self.a_dim*4]
+        #action_probs = action_probs *state[self.a_dim*3:self.a_dim*4+10]
         dist = Categorical(action_probs)
         action = dist.sample()# -> gets the lowest non 0 value?!
 
@@ -165,7 +163,16 @@ class ActorCritic(nn.Module):
         return action.item()
 
     def evaluate(self, state, action):
+        #@in state   batch_sizex161   [[0,1,0,1,....],...] 1 or 0 vector
+        #@in action  batch_size       [42,0,28,...]         action number in action space
+        #@return     action_logprobs
+        #@return     state_values
+        #@return     dist_entropy
+
+        #If batch_size = 44935               
+        #action_probability=44935x42     state_val=qvalue=44935x1   state=44935x161
         action_probs, state_value = self.actor_critic(state)
+        #dist=distribution = 44935x1
         dist = Categorical(action_probs)
 
         action_logprobs = dist.log_prob(action)
@@ -230,7 +237,7 @@ class PPO:
 
         # Optimize policy for K epochs:
         for _ in range(self.K_epochs):
-            # Evaluating old actions and values :
+            # Evaluating old actions and values :                       44935x161   44935
             logprobs, state_values, dist_entropy = self.policy.evaluate(old_states, old_actions)
             advantages = rewards - state_values.detach()
 
@@ -374,7 +381,7 @@ def learn_single(ppo, update_timestep, eps_decay, env, increase_batch, log_path,
                 ppo.my_update(bbb)
             del bbb
             memory.clear_memory()
-            steps    += increase_batch
+            steps    += increase_batch*((datetime.datetime.now()-start_time).seconds)
 
         # logging
         # if uuu % eps_decay == 0:
@@ -417,11 +424,11 @@ if __name__ == '__main__':
     print("Model state  dimension:", state_dim, "\nModel action dimension:", action_dim)
 
     nu_latent       = 128
-    gamma           = 0.99
-    K               = 16     #5
-    update_timestep = 30000  # train further1: 80000  train further2: 180000  train further2: 300000
-    increase_batch  = 100    # value is multipled with 10=nu_remote!! increase batch size every update step! (instead of lowering lr)
-    eps             = 0.2    # should be decreased to 0 during training
+    gamma           = 0.99   # GAE Parameter
+    K               = 10     #5,10 Number of model optimizations in one round
+    update_timestep = 45000  # train further1: 80000  train further2: 180000  train further2: 300000
+    increase_batch  = 10    # value is multipled with 10=nu_remote!! increase batch size every update step! (instead of lowering lr), currently increases with time
+    eps             = 0.2    # should be decreased to 0 during training - clipping parameter
     lr              = 0.01
     eps_decay       = int(8000000/update_timestep) # decay eps after these many steps
     log_path        = "logging"+str(K)+"_"+str(update_timestep)+"_"+str(increase_batch)+"_"+str(random.randrange(100))+".txt"
