@@ -4,6 +4,8 @@ import gym_schafkopf
 from mcts.node import Node
 from copy import deepcopy
 
+opts_RL    = {"names": ["Max", "Lea", "Jo", "Tim"], "type": ["RL", "RL", "RL", "RL"], "nu_cards": 8, "active_player": 3, "seed": None, "colors": ['E', 'G', 'H', 'S'], "value_conversion": {1: "7", 2: "8", 3: "9", 4: "U", 5: "O", 6: "K", 7: "X", 8: "A"}}
+
 class MonteCarloTree:
   '''
   Inspired by https://github.com/Taschee/schafkopf/blob/master/schafkopf/players/uct_player.py
@@ -11,6 +13,8 @@ class MonteCarloTree:
   def __init__(self, game_state, player_hands, allowed_actions, ucb_const=1):
     self.root = Node(None, None, game_state, player_hands, allowed_actions)
     self.ucb_const = ucb_const
+    self.treeList = []
+    self.treeFilled = False
 
   def uct_search(self, num_playouts):
     for _ in range(num_playouts):
@@ -21,8 +25,9 @@ class MonteCarloTree:
     results = []
     for child in self.root.children:
       results.append((child.previous_action, child.visits, child.get_average_reward(self.root.game_state["cp"])))
-
-    return results
+    
+    print(self.getTree(node=self.root), "\n-->Depth: ", self.getMaxDepth(), " Elements: ", len(self.treeList))
+    return self.root.best_child(ucb_const=1).previous_action
 
   def selection(self):
     current_node = self.root
@@ -41,7 +46,7 @@ class MonteCarloTree:
     #TODO: check if this should be random or chosen by player policy
     chosen_action = random.choice(tuple(not_visited_actions))
 
-    schafkopf_env           = gym.make("Schafkopf-v1")
+    schafkopf_env           = gym.make("Schafkopf-v1", options_test=opts_RL)
     schafkopf_env.setGameState(deepcopy(node.game_state), deepcopy(node.player_hands))
     schafkopf_env.stepTest(chosen_action) # state, rewards, terminal, info
 
@@ -50,7 +55,7 @@ class MonteCarloTree:
     return new_node
 
   def simulation(self, selected_node):
-    schafkopf_env           = gym.make("Schafkopf-v1")
+    schafkopf_env           = gym.make("Schafkopf-v1", options_test=opts_RL)
     gameOver= deepcopy(selected_node.game_state)["gameOver"]
     schafkopf_env.setGameState(deepcopy(selected_node.game_state), deepcopy(selected_node.player_hands))
 
@@ -74,3 +79,50 @@ class MonteCarloTree:
       else:
         result[child.previous_action] = (child.visits, child.cumulative_rewards)
     return result
+
+
+  ## below only printing Tree functions:
+  def getSimpleDepth(self, node, d=0):
+    '''get simple depth at first children always'''
+    if len(node.children)>0:
+      return self.getDepth(node.children[0], d=d+1)
+    else:
+      return d
+
+  def getMaxDepth(self):
+    '''use getTree for that 
+       this is quite easy cause treeList is a list that is already sorted by depth
+    '''
+    if not self.treeFilled:
+      self.getTree(self.root)
+    return self.treeList[len(self.treeList)-1][0]
+
+  def subfinder(self, mylist, pattern):
+      return list(filter(lambda x: x in pattern, mylist))
+
+  def getTree(self, node, d=0):
+    '''getTree(self.root) returns e.g. 
+    self.treeList = [[0, 0, 37, -1], [0, 1, 34, -1], [0, 2, 39, -1], [0, 3, 36, -1], [0, 4, 32, -1], [0, 5, 41, -1], [1, 0, 40, 36], [1, 0, 40, 39], [1, 1, 32, 36], [1, 1, 32, 39], [1, 2, 38, 36], [1, 2, 38, 39], [1, 3, 33, 36], [1, 3, 33, 39], [1, 4, 39, 39], [1, 5, 34, 39], [2, 0, 37, 32], [2, 0, 41, 40], [2, 1, 35, 32], [2, 1, 36, 40]]
+    with:
+      [0,       0,           37,      -1],
+       depth,   childnumber  action   parent that action belongs to (-1 means root)
+    '''
+    self.treeFilled = False
+    if len(node.children)>0:
+      for i,child in enumerate(node.children):
+        if child.parent.previous_action is None:
+            b = -1
+        else:
+            b = child.parent.previous_action
+        a = [d, i, child.previous_action, b]
+        if len(self.subfinder(self.treeList, [a])) == 0:
+          self.treeList.append(a)
+          return self.getTree(child, d=d+1)
+      if d>0:
+        return self.getTree(node.parent, d=d-1)
+      else:
+        self.treeList.sort()
+        self.treeFilled = True
+        return self.treeList
+    else:
+      return self.getTree(node.parent, d=d-1)
