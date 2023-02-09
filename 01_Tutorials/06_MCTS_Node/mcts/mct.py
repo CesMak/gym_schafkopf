@@ -27,6 +27,7 @@ class MonteCarloTree:
       results.append((child.previous_action, child.visits, child.get_average_reward(self.root.game_state["cp"])))
     
     print(self.getTree(node=self.root), "\n-->Depth: ", self.getMaxDepth(), " Elements: ", len(self.treeList))
+    self.printTree()
     return self.root.best_child(ucb_const=1).previous_action
 
   def selection(self):
@@ -111,10 +112,10 @@ class MonteCarloTree:
     if len(node.children)>0:
       for i,child in enumerate(node.children):
         if child.parent.previous_action is None:
-            b = -1
+            p = -1
         else:
-            b = child.parent.previous_action
-        a = [d, i, child.previous_action, b]
+            p = child.parent.previous_action
+        a = [d, i, child.previous_action, p ]
         if len(self.subfinder(self.treeList, [a])) == 0:
           self.treeList.append(a)
           return self.getTree(child, d=d+1)
@@ -126,3 +127,38 @@ class MonteCarloTree:
         return self.treeList
     else:
       return self.getTree(node.parent, d=d-1)
+
+  def printTree(self):
+    '''[0, 0, 37, -1]
+        d  c  a    p     depth child action parent
+    '''
+    res = []
+    md = self.getMaxDepth()
+    depth = 0
+    depth_actions  = []
+    for i in range(md+1):
+                            # layers zwischenPlatz   #namen
+      one_line = list("---"+md*(3*(2**md*"...."))+"---")      
+      one_line[0]=str(i)
+      one_line[len(one_line)-1]=str(i)
+      one_line.append("\n")
+      res.append(''.join(one_line))
+
+    for i in self.treeList:
+      [d, c, a, p]=i
+      if d>depth:
+        depth +=1
+        depth_actions = []
+      else:
+        depth_actions.append(a)
+
+      abstand=(md-d)*3
+      ol = list(res[d])
+      ol[3+abstand+c*(abstand+3)]=str(a)
+      res[d]=''.join(ol)
+      # else:
+      #   # TODO bringe in reihenfolge von parents
+      #   j = depth_actions.index(p)
+      #   one_line[]
+      #   res+=str(a)+".."
+    for line in res: print(line)
