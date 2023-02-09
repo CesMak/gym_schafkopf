@@ -90,13 +90,25 @@ class MonteCarloTree:
     else:
       return d
 
+  def getMaxChildren(self):
+    '''use getTree for that 
+       the child number is the second one
+    '''
+    if not self.treeFilled:
+      self.getTree(self.root)
+    max = 0
+    for i in self.treeList:
+      [_, c, _, _] = i
+      if c>max: max=c
+    return max+1 # cause it starts counting from
+
   def getMaxDepth(self):
     '''use getTree for that 
        this is quite easy cause treeList is a list that is already sorted by depth
     '''
     if not self.treeFilled:
       self.getTree(self.root)
-    return self.treeList[len(self.treeList)-1][0]
+    return self.treeList[len(self.treeList)-1][0]+1 # cause it starts counting from 0
 
   def subfinder(self, mylist, pattern):
       return list(filter(lambda x: x in pattern, mylist))
@@ -131,14 +143,32 @@ class MonteCarloTree:
   def printTree(self):
     '''[0, 0, 37, -1]
         d  c  a    p     depth child action parent
+        Drawing such big trees is hard!!!
+        This tree is only correct for the layer 0 and layer 1 !
+
+        This method does not work cause if there are in one depth duplicates 
+        e.g. multiple play try to play the same option 40....40 
+        then the index finder does not work correctly!
+
+        one Example is this wrong tree:
+          
+        [[0, 0, 20, -1], [0, 1, 3, -1], [1, 0, 17, 3], [1, 0, 17, 20], [1, 1, 21, 3], [1, 1, 21, 20], [2, 0, 24, 17], [2, 0, 24, 21], [2, 1, 29, 17], [2, 1, 29, 21], [3, 0, 6, 24], [3, 0, 6, 29]] 
+        -->Depth:  4  Elements:  12
+        0--........................20......................3......................--0
+
+        1--................17.21...................17.21...........................--1
+
+        2--........24.29.29........................................................--2
+
+        3--6..6..................................................................--3
     '''
     res = []
-    md = self.getMaxDepth()
+    md = self.getMaxDepth()    -1
+    mc = self.getMaxChildren() -1
     depth = 0
-    depth_actions  = []
     for i in range(md+1):
                             # layers zwischenPlatz   #namen
-      one_line = list("---"+md*(3*(2**md*"...."))+"---")      
+      one_line = list("---"+len(self.treeList)*4*".."+"---")      
       one_line[0]=str(i)
       one_line[len(one_line)-1]=str(i)
       one_line.append("\n")
@@ -148,17 +178,14 @@ class MonteCarloTree:
       [d, c, a, p]=i
       if d>depth:
         depth +=1
-        depth_actions = []
-      else:
-        depth_actions.append(a)
 
-      abstand=(md-d)*3
       ol = list(res[d])
-      ol[3+abstand+c*(abstand+3)]=str(a)
+      if d>0:
+        e = "".join(res[d-1]).index(str(p))+c*3-8
+        ol[e:e+2]=str(a).zfill(2)
+      else:
+        aa=int(len(one_line)/(mc+2))
+        e = 3+aa+aa*c
+        ol[e:e+2]=str(a).zfill(2)
       res[d]=''.join(ol)
-      # else:
-      #   # TODO bringe in reihenfolge von parents
-      #   j = depth_actions.index(p)
-      #   one_line[]
-      #   res+=str(a)+".."
     for line in res: print(line)
