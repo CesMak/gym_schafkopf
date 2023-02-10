@@ -46,6 +46,8 @@ class gameLogic(unittest.TestCase):
             sampled_enemys = test_game.subSample(state, do_eval=False, print_=False)
             mct =  MonteCarloTree(gameState, sampled_enemys, allowed_actions)
             best_action= mct.uct_search(nu_playouts)                                     # searches best node by playing with random actions until the end
+        # TODO https://github.com/Taschee/schafkopf/blob/96c5b9199d9260b4fdd74de8a6e54805b407407b/schafkopf/players/uct_player.py#L132
+        # evaluate result with best move! 
         #     for ba in dict_result.keys():
         #         if ba in action_list:
         #             action_list[ba]+=dict_result[ba]
@@ -81,7 +83,7 @@ class gameLogic(unittest.TestCase):
         time = (datetime.now()-t1).total_seconds()
         points = tg.countResult(tg.getGameState()["players"][0].offhand)
         if auto:
-            print("Auto Option Time:", time, "points:", points)  
+            print("\nAuto Option Time:", time, "points:", points)  
         else:
             print("NO Auto Option Time:",  time, "points:", points)  
         return time, points
@@ -116,7 +118,7 @@ class gameLogic(unittest.TestCase):
         #247,248,253,218, 184,193,
         #248,253,218,184,193, 232, 181, 230
                             #weg rE  wenz gei sE  sH    SE
-        interesting_seeds = [253,248,184,232, 193, 181, 42]
+        interesting_seeds = [42]
         tN = pN = tA =pA =0
         for i in interesting_seeds:
             t,p = self.timeTest(seed=i, nu_samples=7, nu_playouts=50, print_=False)
@@ -129,14 +131,13 @@ class gameLogic(unittest.TestCase):
         print("total Points AUTO:", pA, "vs", pN)
 
     def test_allGames(self):     
-        interesting_seeds = [2]
+        interesting_seeds = [248]
         for i in interesting_seeds:
-            self.init(seed=42, options=opts_mcts)
+            self.init(seed=i, options=opts_mcts)
             tg     = self.env.test_game
             tg.printCurrentState()
             for i in range(9):
-                ba = self.getMCTSAction(tg, nu_samples=1, nu_playouts=20, print_=False)
-                print(ba)
+                ba = self.getMCTSAction(tg, nu_samples=1, nu_playouts=15, print_=False)
                 self.env.stepRandomPlay_Env(ba, print__=True)
 if __name__ == '__main__':
     unittest.main()

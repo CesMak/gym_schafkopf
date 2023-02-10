@@ -5,6 +5,7 @@ from mcts.node import Node
 from copy import deepcopy
 
 opts_RL    = {"names": ["Max", "Lea", "Jo", "Tim"], "type": ["RL", "RL", "RL", "RL"], "nu_cards": 8, "active_player": 3, "seed": None, "colors": ['E', 'G', 'H', 'S'], "value_conversion": {1: "7", 2: "8", 3: "9", 4: "U", 5: "O", 6: "K", 7: "X", 8: "A"}}
+opts_RAND  = {"names": ["Max", "Lea", "Jo", "Tim"], "type": ["RANDOM", "RANDOM", "RANDOM", "RANDOM"], "nu_cards": 8, "active_player": 3, "seed": None, "colors": ['E', 'G', 'H', 'S'], "value_conversion": {1: "7", 2: "8", 3: "9", 4: "U", 5: "O", 6: "K", 7: "X", 8: "A"}}
 
 class MonteCarloTree:
   '''
@@ -13,26 +14,27 @@ class MonteCarloTree:
   def __init__(self, game_state, player_hands, allowed_actions, ucb_const=1):
     self.root = Node(None, None, game_state, player_hands, allowed_actions)
     self.ucb_const = ucb_const
+    self.rewards = []
+    self.gameOver = False
     self.treeList = []
     self.treeFilled = False
 
-  def uct_search(self, num_playouts):
-    for _ in range(num_playouts):
+
+  def uct_search(self, num_playouts, print_=False):
+    for i in range(num_playouts):
+      print(self.root.player_hands)
       selected_node = self.selection()
       rewards = self.simulation(selected_node)
       self.backup_rewards(leaf_node=selected_node, rewards=rewards)
 
-    results = []
-    for child in self.root.children:
-      results.append((child.previous_action, child.visits, child.get_average_reward(self.root.game_state["cp"])))
-    
-    print(self.getTree(node=self.root), "\n-->Depth: ", self.getMaxDepth(), " Elements: ", len(self.treeList))
-    self.printTree()
+    if print_:
+      print(self.getTree(node=self.root), "\n-->Depth: ", self.getMaxDepth(), " Elements: ", len(self.treeList))
+      self.printTree()
     return self.root.best_child(ucb_const=1).previous_action
 
   def selection(self):
     current_node = self.root
-    while not current_node.is_terminal():
+    while not self.gameOver or current_node.is_terminal():
       if not current_node.fully_expanded():
         return self.expand(current_node)
       else:
@@ -49,17 +51,20 @@ class MonteCarloTree:
 
     schafkopf_env           = gym.make("Schafkopf-v1", options_test=opts_RL)
     schafkopf_env.setGameState(deepcopy(node.game_state), deepcopy(node.player_hands))
-    schafkopf_env.stepTest(chosen_action) # state, rewards, terminal, info
+    _, self.rewards, self.gameOver, _ = schafkopf_env.stepTest(chosen_action) # state, rewards, terminal, info
 
     new_node = Node(parent=node, game_state=deepcopy(schafkopf_env.getGameState()), previous_action=chosen_action, player_hands=deepcopy(schafkopf_env.getCards()), allowed_actions=schafkopf_env.test_game.getOptionsList())
     node.add_child(child_node=new_node)
     return new_node
 
   def simulation(self, selected_node):
+    if self.gameOver: # special case if is already game over do not expand anymore / create new node!
+      return self.rewards["final_rewards"]
+
     schafkopf_env           = gym.make("Schafkopf-v1", options_test=opts_RL)
     gameOver= deepcopy(selected_node.game_state)["gameOver"]
     schafkopf_env.setGameState(deepcopy(selected_node.game_state), deepcopy(selected_node.player_hands))
-
+    
     while not gameOver:
       rewards, round_finished, gameOver = schafkopf_env.test_game.playUntilEnd()
     return rewards["final_rewards"]
