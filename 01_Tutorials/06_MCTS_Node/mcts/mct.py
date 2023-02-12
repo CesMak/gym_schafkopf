@@ -22,7 +22,6 @@ class MonteCarloTree:
 
   def uct_search(self, num_playouts, print_=False):
     for i in range(num_playouts):
-      print(self.root.player_hands)
       selected_node = self.selection()
       rewards = self.simulation(selected_node)
       self.backup_rewards(leaf_node=selected_node, rewards=rewards)
@@ -30,7 +29,12 @@ class MonteCarloTree:
     if print_:
       print(self.getTree(node=self.root), "\n-->Depth: ", self.getMaxDepth(), " Elements: ", len(self.treeList))
       self.printTree()
-    return self.root.best_child(ucb_const=1).previous_action
+    
+    results = {}
+    self.root.best_child(ucb_const=self.ucb_const)
+    for child in self.root.children:
+        results[child.previous_action] = child.visits # child.visits is better than child.value!!! 
+    return results  
 
   def selection(self):
     current_node = self.root

@@ -10,6 +10,7 @@ class Node:
     self.children = []
     self.cumulative_rewards = [0, 0, 0, 0]
     self.visits = 0
+    self.value  = 0
 
     self.game_state = game_state
     self.player_hands = player_hands
@@ -50,7 +51,8 @@ class Node:
   def ucb_value(self, ucb_const):
     if self.visits != 0:
       average_reward = self.get_average_reward(player=self.parent.game_state["cp"])
-      return average_reward + ucb_const * np.sqrt(2 * np.log(self.parent.visits) / self.visits)
+      self.value = average_reward + ucb_const * np.sqrt(2 * np.log(self.parent.visits) / self.visits)
+      return self.value
     else:
       return np.infty
 
